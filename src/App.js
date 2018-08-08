@@ -8,8 +8,8 @@ export class App extends React.Component {
   render() {
     return (
       <div className="wrapper">
-        <h1>How does this data sound?</h1>
-        <p>About inclusive data visualization</p>
+        <h1>How Does This Data Sound?</h1>
+        <p>About Inclusive Data Visualization</p>
         <h2>Since when have astronomers been discovering planets?</h2>
         <p>
           An exoplanet or extrasolar planet is a planet outside our solar

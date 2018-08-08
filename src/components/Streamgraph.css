@@ -13,6 +13,8 @@ path.stream:focus {
 .streamgraph-legend-square {
   width: 1em;
   height: 1em;
-  margin-left: 0.5em;
   margin-right: 0.5em;
+}
+.streamgraph-legend-label {
+  margin-right: 2em;
 }

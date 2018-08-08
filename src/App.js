@@ -2,6 +2,7 @@ import * as React from "react";
 import "./App.css";
 import { Streamgraph } from "./components/Streamgraph";
 import { Scatterplot } from "./components/Scatterplot";
+import { Histogram } from "./components/Histogram";
 
 export class App extends React.Component {
   render() {
@@ -12,6 +13,8 @@ export class App extends React.Component {
         <Streamgraph />
         <h2>What type of planet for what type of discovery method?</h2>
         <Scatterplot />
+        <h2>How far do we find exoplanets?</h2>
+        <Histogram />
       </div>
     );
   }

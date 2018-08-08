@@ -137,7 +137,7 @@ export class Streamgraph extends React.Component {
     };
 
     const timeDomain = [1992, 2018];
-    const countDomain = [0, max(series, stackMax) / 5];
+    const countDomain = [0, max(series, stackMax)];
 
     const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
     const countScale = this.getLinearScale(countDomain, [CHART_HEIGHT / 2, 0]);

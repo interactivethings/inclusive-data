@@ -9,12 +9,12 @@ export class App extends React.Component {
     return (
       <div className="wrapper">
         <h1>Inclusive Data Visualization</h1>
-        <h2>How many planets?</h2>
+        <h2>How far do we find exoplanets?</h2>
+        <Histogram />
+        <h2>Since when have astronomers been discovering planets?</h2>
         <Streamgraph />
         <h2>What type of planet for what type of discovery method?</h2>
         <Scatterplot />
-        <h2>How far do we find exoplanets?</h2>
-        <Histogram />
       </div>
     );
   }

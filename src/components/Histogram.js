@@ -72,6 +72,9 @@ export class Histogram extends React.Component {
               return (
                 <rect
                   tabindex={0}
+                  aria-label={`bin from distance ${bin.x0} and value ${
+                    bin.x1
+                  } parsecs, contains ${bin.length} planets`}
                   key={i}
                   data-n={`bin-${bin.x0}:${bin.x1}`}
                   x={DISTANCE_SCALE(bin.x0)}

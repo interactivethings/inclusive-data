@@ -77,7 +77,7 @@ export class Scatterplot extends React.Component {
     g.call(() => axisBottom(scale));
   };
   createAxisY = scale => {
-    const g = select(this.axisX.current);
+    const g = select(this.axisY.current);
     g.call(() => axisLeft(scale));
   };
   componentDidMount() {

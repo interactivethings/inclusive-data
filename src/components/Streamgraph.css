@@ -1,0 +1,9 @@
+path.stream {
+  fill-opacity: 0.9;
+  stroke: transparent;
+}
+path.stream:focus {
+  fill-opacity: 1;
+  stroke: black;
+  outline: none;
+}

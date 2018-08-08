@@ -1,0 +1,13 @@
+rect {
+  fill: crimson;
+}
+
+rect:focus {
+  outline: none;
+  fill: black;
+}
+.histogram-y-axis-label {
+  text-anchor: end;
+  dominant-baseline: text-after-edge;
+  font-size: 12px;
+}

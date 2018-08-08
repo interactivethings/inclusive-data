@@ -1,20 +1,18 @@
 import { max } from "d3-array";
 import { nest } from "d3-collection";
-import { scaleLinear, scaleOrdinal, scaleLog } from "d3-scale";
-import {
-  schemePastel1,
-  interpolateWarm,
-  schemeDark2
-} from "d3-scale-chromatic";
+import { scaleLinear, scaleLog, scaleOrdinal } from "d3-scale";
+import { schemeDark2 } from "d3-scale-chromatic";
 import {
   area,
+  curveBasis,
   stack,
-  stackOrderInsideOut,
   stackOffsetWiggle,
-  curveBasis
+  stackOrderInsideOut
 } from "d3-shape";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
+
+import "./Streamgraph.css";
 
 const W = 1200;
 const H = 600;
@@ -22,7 +20,7 @@ const MARGIN = { TOP: 20, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 
-const DISCOVERY_METHODS = [
+const DISCOVERY_METHODS_ALL = [
   "Radial Velocity",
   "Imaging",
   "Eclipse Timing Variations",
@@ -34,6 +32,7 @@ const DISCOVERY_METHODS = [
   "Microlensing",
   "Pulsar Timing"
 ];
+const DISCOVERY_METHODS = ["Radial Velocity", "Transit", "Other methods"];
 // interface Flatten {
 //   year: number;
 //   "Radial Velocity": number | undefined;
@@ -97,30 +96,34 @@ export class Streamgraph extends React.Component {
       .rollup(d => (d ? d.length : 0))
       .object(data);
 
-    const flatten = Object.keys(n).map(key => ({
+    const flat = Object.keys(n).map(key => ({
       year: +key,
-      "Radial Velocity": n[key]["Radial Velocity"]
-        ? n[key]["Radial Velocity"]
-        : 0,
-      Imaging: n[key]["Imaging"] ? n[key]["Imaging"] : 0,
-      "Eclipse Timing Variations": n[key]["Eclipse Timing Variations"]
-        ? n[key]["Eclipse Timing Variations"]
-        : 0,
-      Transit: n[key]["Transit"] ? n[key]["Transit"] : 0,
-      Astrometry: n[key]["Astrometry"] ? n[key]["Astrometry"] : 0,
-      "Orbital Brightness Modulation": n[key]["Orbital Brightness Modulation"]
-        ? n[key]["Orbital Brightness Modulation"]
-        : 0,
-      "Pulsation Timing Variations": n[key]["Pulsation Timing Variations"]
-        ? n[key]["Pulsation Timing Variations"]
-        : 0,
-      "Transit Timing Variations": n[key]["Transit Timing Variations"]
-        ? n[key]["Transit Timing Variations"]
-        : 0,
-      Microlensing: n[key]["Microlensing"] ? n[key]["Microlensing"] : 0,
-      "Pulsar Timing": n[key]["Pulsar Timing"] ? n[key]["Pulsar Timing"] : 0
+      "Radial Velocity": n[key]["Radial Velocity"] || 0,
+      Transit: n[key]["Transit"] || 0,
+      Imaging: n[key]["Imaging"] || 0,
+      "Eclipse Timing Variations": n[key]["Eclipse Timing Variations"] || 0,
+      Astrometry: n[key]["Astrometry"] || 0,
+      "Orbital Brightness Modulation":
+        n[key]["Orbital Brightness Modulation"] || 0,
+      "Pulsation Timing Variations": n[key]["Pulsation Timing Variations"] || 0,
+      "Transit Timing Variations": n[key]["Transit Timing Variations"] || 0,
+      Microlensing: n[key]["Microlensing"] || 0,
+      "Pulsar Timing": n[key]["Pulsar Timing"] || 0
     }));
 
+    const flatten = flat.map(d => ({
+      "Other methods":
+        d.Imaging +
+        d["Eclipse Timing Variations"] +
+        d.Astrometry +
+        d["Orbital Brightness Modulation"] +
+        d["Pulsation Timing Variations"] +
+        d["Transit Timing Variations"] +
+        d.Microlensing +
+        d["Pulsar Timing"],
+      ...d
+    }));
+    console.log("flatten", flatten);
     const st = stack()
       .keys(DISCOVERY_METHODS)
       .offset(stackOffsetWiggle)
@@ -160,10 +163,13 @@ export class Streamgraph extends React.Component {
             {series.map((d, i) => {
               return (
                 <path
+                  className="stream"
                   key={`stack-${d}`}
                   d={areaGenerator(d)}
                   data-n="stack-serie"
                   fill={colorScale(d.key)}
+                  tabindex={0}
+                  onMouseDown={() => console.log(d.key)}
                 />
               );
             })}

@@ -1,17 +1,9 @@
-import { max, extent, histogram } from "d3-array";
-import {
-  scaleBand,
-  scaleLinear,
-  scaleOrdinal,
-  scaleSqrt,
-  scaleLog
-} from "d3-scale";
+import { histogram, max } from "d3-array";
+import { axisBottom, axisLeft } from "d3-axis";
+import { scaleLinear } from "d3-scale";
 import { select } from "d3-selection";
-
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
-import { schemePastel1, schemeDark2 } from "d3-scale-chromatic";
-import { axisLeft, axisBottom } from "d3-axis";
 import "./Scatterplot.css";
 
 const W = 1200;
@@ -19,7 +11,7 @@ const H = 600;
 const MARGIN = { TOP: 50, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-const NB_BINS = 100;
+const NB_BINS = 120;
 
 const FILTERED_PLANETS = planets.filter(d => d.st_dist < 2000);
 
@@ -63,10 +55,12 @@ export class Histogram extends React.Component {
         <g
           transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT + MARGIN.TOP})`}
           ref={this.axisX}
+          tab-index={1}
         />
         <g
           transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
           ref={this.axisY}
+          tab-index={1}
         />
 
         <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
@@ -76,9 +70,9 @@ export class Histogram extends React.Component {
                 key={i}
                 data-n={`bin-${bin.x0}:${bin.x1}`}
                 x={DISTANCE_SCALE(bin.x0)}
-                y={COUNT_SCALE(bin.length - 1)}
+                y={COUNT_SCALE(bin.length)}
                 width={CHART_WIDTH / NB_BINS}
-                height={CHART_HEIGHT - COUNT_SCALE(bin.length - 1)}
+                height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
                 fill={"crimson"}
               />
             );

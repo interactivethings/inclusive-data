@@ -129,23 +129,28 @@ export class Scatterplot extends React.Component {
         <g transform={`translate(0, ${MARGIN.TOP})`} ref={this.axisY} />
 
         <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
-          {planets.map(d => (
-            <circle
-              cx={orbitalPeriodScale(d.pl_orbper)}
-              cy={planetRadiusScale(d.pl_rade)}
-              r={2}
-              fill={colors(d.pl_discmethod)}
-              stroke={colors(d.pl_discmethod)}
-              className="circle"
-              onMouseEnter={() =>
-                console.log(
-                  `radus: ${d.pl_rade}, orbital period: ${
-                    d.pl_orbper
-                  }, discovery method: ${d.pl_discmethod}`
-                )
-              }
-            />
-          ))}
+          {planets.map(
+            (d, i) =>
+              d.pl_orbper &&
+              d.pl_rade && (
+                <circle
+                  key={`scatterplot-dot-${i}`}
+                  cx={orbitalPeriodScale(d.pl_orbper)}
+                  cy={planetRadiusScale(d.pl_rade)}
+                  r={2}
+                  fill={colors(d.pl_discmethod)}
+                  stroke={colors(d.pl_discmethod)}
+                  className="circle"
+                  onMouseEnter={() =>
+                    console.log(
+                      `radus: ${d.pl_rade}, orbital period: ${
+                        d.pl_orbper
+                      }, discovery method: ${d.pl_discmethod}`
+                    )
+                  }
+                />
+              )
+          )}
         </g>
       </svg>
     );

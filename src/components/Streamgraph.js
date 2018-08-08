@@ -1,14 +1,26 @@
 import { max } from "d3-array";
 import { nest } from "d3-collection";
-import { scaleLinear, scaleOrdinal } from "d3-scale";
-import { schemePastel1 } from "d3-scale-chromatic";
-import { select } from "d3-selection";
-import { area, stack } from "d3-shape";
+import { scaleLinear, scaleOrdinal, scaleLog } from "d3-scale";
+import {
+  schemePastel1,
+  interpolateWarm,
+  schemeDark2
+} from "d3-scale-chromatic";
+import {
+  area,
+  stack,
+  stackOrderInsideOut,
+  stackOffsetWiggle,
+  curveBasis
+} from "d3-shape";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
 
-const CHART_WIDTH = 1200;
-const CHART_HEIGHT = 500;
+const W = 1200;
+const H = 600;
+const MARGIN = { TOP: 20, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
+const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
+const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 
 const DISCOVERY_METHODS = [
   "Radial Velocity",
@@ -54,6 +66,12 @@ export class Streamgraph extends React.Component {
   getLinearScale = (domain, range) => {
     const ls = scaleLinear()
       .domain(domain)
+      .range(range);
+    return ls;
+  };
+  getLogScale = (domain, range) => {
+    const ls = scaleLog()
+      .domain(domain)
       .range(range)
       .nice();
     return ls;
@@ -65,10 +83,10 @@ export class Streamgraph extends React.Component {
   //   return ls;
   // };
 
-  getColorScale = domain => {
+  getColorScale = (domain, range) => {
     const cs = scaleOrdinal()
-      .domain([])
-      .range(schemePastel1);
+      .domain(domain)
+      .range(range);
     return cs;
   };
 
@@ -103,14 +121,15 @@ export class Streamgraph extends React.Component {
       "Pulsar Timing": n[key]["Pulsar Timing"] ? n[key]["Pulsar Timing"] : 0
     }));
 
-    const st = stack().keys(DISCOVERY_METHODS);
+    const st = stack()
+      .keys(DISCOVERY_METHODS)
+      .offset(stackOffsetWiggle)
+      .order(stackOrderInsideOut);
 
-    const series = st(flatten);
-    return series;
+    return st(flatten);
   };
 
-  createStream = () => {
-    const s = select(this.stackGroup.current);
+  render() {
     const series = this.getStackedData(planets);
 
     const stackMax = layer => {
@@ -118,46 +137,33 @@ export class Streamgraph extends React.Component {
     };
 
     const timeDomain = [1992, 2018];
-    const countDomain = [0, max(series, stackMax)];
-    console.log("timeDomain", timeDomain);
-    console.log("countDomain", countDomain);
+    const countDomain = [0, max(series, stackMax) / 5];
 
     const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
-    const countScale = this.getLinearScale(countDomain, [CHART_HEIGHT, 0]);
+    const countScale = this.getLinearScale(countDomain, [CHART_HEIGHT / 2, 0]);
+    const colorScale = this.getColorScale(DISCOVERY_METHODS, schemeDark2);
 
     const areaGenerator = area()
-      .x((_, i) => timeScale(i))
-      .y0(d => {
-        console.log(countScale(d[0]));
-        return countScale(d[0]);
-      })
-      .y1(d => countScale(d[1]));
-
-    s.selectAll("path")
-      .data(series)
-      .attr("d", areaGenerator);
-  };
-
-  componentDidMount() {
-    this.createStream();
-  }
-  render() {
-    const series = this.getStackedData(planets);
+      .x(d => timeScale(d.data.year))
+      .y0(d => countScale(d[0]))
+      .y1(d => countScale(d[1]))
+      .curve(curveBasis);
 
     return (
       <div className="streamgraph-root">
-        <svg width={CHART_WIDTH} height={CHART_HEIGHT}>
+        <svg width={W} height={H}>
           <g
             ref={this.stackGroup}
-            // transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             data-n="stacks-group"
           >
             {series.map((d, i) => {
               return (
                 <path
                   key={`stack-${d}`}
+                  d={areaGenerator(d)}
                   data-n="stack-serie"
-                  fill={"#FF0000"}
+                  fill={colorScale(d.key)}
                 />
               );
             })}

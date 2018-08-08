@@ -9,7 +9,7 @@ export class App extends React.Component {
       <div className="wrapper">
         <h1>Inclusive Data Visualization</h1>
         <h2>Streamgraph</h2>
-        {/* <Streamgraph /> */}
+        <Streamgraph />
         <h2>Scatterplot</h2>
         <Scatterplot />
       </div>

@@ -18,3 +18,8 @@ path.stream:focus {
 .streamgraph-legend-label {
   margin-right: 2em;
 }
+
+.domain,
+.tick > line {
+  stroke: none;
+}

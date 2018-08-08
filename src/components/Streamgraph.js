@@ -1,6 +1,7 @@
 import { max } from "d3-array";
+import { axisBottom } from "d3-axis";
 import { nest } from "d3-collection";
-import { scaleLinear, scaleLog, scaleOrdinal } from "d3-scale";
+import { scaleLinear, scaleOrdinal } from "d3-scale";
 import { schemeDark2 } from "d3-scale-chromatic";
 import {
   area,
@@ -9,10 +10,10 @@ import {
   stackOffsetWiggle,
   stackOrderInsideOut
 } from "d3-shape";
+import { select } from "d3-selection";
+
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
-import { polygonCentroid } from "d3-polygon";
-
 import "./Streamgraph.css";
 
 const W = 1200;
@@ -61,6 +62,7 @@ const DISCOVERY_METHODS = ["Radial Velocity", "Transit", "Other methods"];
 export class Streamgraph extends React.Component {
   constructor() {
     super();
+    this.axisX = React.createRef();
     this.stackGroup = React.createRef();
   }
   getLinearScale = (domain, range) => {
@@ -69,19 +71,6 @@ export class Streamgraph extends React.Component {
       .range(range);
     return ls;
   };
-  getLogScale = (domain, range) => {
-    const ls = scaleLog()
-      .domain(domain)
-      .range(range)
-      .nice();
-    return ls;
-  };
-  // getOrdinalScale = (domain, range) => {
-  //   const ls = scaleOrdinal()
-  //     .domain(domain)
-  //     .range(range)
-  //   return ls;
-  // };
 
   getColorScale = (domain, range) => {
     const cs = scaleOrdinal()
@@ -124,7 +113,7 @@ export class Streamgraph extends React.Component {
         d["Pulsar Timing"],
       ...d
     }));
-    console.log("flatten", flatten);
+
     const st = stack()
       .keys(DISCOVERY_METHODS)
       .offset(stackOffsetWiggle)
@@ -133,6 +122,16 @@ export class Streamgraph extends React.Component {
     return st(flatten);
   };
 
+  createAxisX = scale => {
+    const g = select(this.axisX.current);
+    g.call(axisBottom(scale));
+  };
+
+  componentDidMount() {
+    const timeDomain = [1992, 2018];
+    const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
+    this.createAxisX(timeScale);
+  }
   render() {
     const series = this.getStackedData(planets);
 
@@ -180,6 +179,12 @@ export class Streamgraph extends React.Component {
               );
             })}
           </g>
+          <g
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            ref={this.axisX}
+            tabIndex={0}
+            aria-label={``}
+          />
         </svg>
         <div className="streamgraph-legend-group">
           {series.map(d => (
@@ -188,7 +193,7 @@ export class Streamgraph extends React.Component {
                 className="streamgraph-legend-square"
                 style={{ backgroundColor: colorScale(d.key) }}
               />
-              <div>{d.key}</div>
+              <div className="streamgraph-legend-label">{d.key}</div>
             </React.Fragment>
           ))}
         </div>

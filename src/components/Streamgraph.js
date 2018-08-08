@@ -11,6 +11,7 @@ import {
 } from "d3-shape";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
+import { polygonCentroid } from "d3-polygon";
 
 import "./Streamgraph.css";
 
@@ -162,19 +163,35 @@ export class Streamgraph extends React.Component {
           >
             {series.map((d, i) => {
               return (
-                <path
-                  className="stream"
-                  key={`stack-${d}`}
-                  d={areaGenerator(d)}
-                  data-n="stack-serie"
-                  fill={colorScale(d.key)}
-                  tabIndex={0}
-                  onMouseDown={() => console.log(d.key)}
-                />
+                <React.Fragment>
+                  <path
+                    className="stream"
+                    key={`stack-${d}`}
+                    d={areaGenerator(d)}
+                    data-n="stack-serie"
+                    fill={colorScale(d.key)}
+                    tabIndex={0}
+                    onMouseDown={() => console.log(d.key)}
+                  />
+                  {/* <text x={polygonCentroid(d)[0]} y={polygonCentroid(d)[1]}>
+                    {d.key}
+                  </text> */}
+                </React.Fragment>
               );
             })}
           </g>
         </svg>
+        <div className="streamgraph-legend-group">
+          {series.map(d => (
+            <React.Fragment>
+              <div
+                className="streamgraph-legend-square"
+                style={{ backgroundColor: colorScale(d.key) }}
+              />
+              <div>{d.key}</div>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     );
   }

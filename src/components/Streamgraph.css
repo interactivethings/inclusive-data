@@ -1,9 +1,18 @@
 path.stream {
-  fill-opacity: 0.9;
   stroke: transparent;
 }
 path.stream:focus {
-  fill-opacity: 1;
-  stroke: black;
+  fill: black;
   outline: none;
+}
+.streamgraph-legend-group {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.streamgraph-legend-square {
+  width: 1em;
+  height: 1em;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
 }

@@ -4,7 +4,7 @@ import { scaleLinear } from "d3-scale";
 import { select } from "d3-selection";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
-import "./Scatterplot.css";
+import "./Histogram.css";
 
 const W = 1200;
 const H = 600;
@@ -51,34 +51,39 @@ export class Histogram extends React.Component {
 
   render() {
     return (
-      <svg width={W} height={H}>
-        <g
-          transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT + MARGIN.TOP})`}
-          ref={this.axisX}
-          tab-index={1}
-        />
-        <g
-          transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
-          ref={this.axisY}
-          tab-index={1}
-        />
-
-        <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
-          {BINS.map((bin, i) => {
-            return (
-              <rect
-                key={i}
-                data-n={`bin-${bin.x0}:${bin.x1}`}
-                x={DISTANCE_SCALE(bin.x0)}
-                y={COUNT_SCALE(bin.length)}
-                width={CHART_WIDTH / NB_BINS}
-                height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
-                fill={"crimson"}
-              />
-            );
-          })}
-        </g>
-      </svg>
+      <div className="histogram-container">
+        <svg width={W} height={H} tabindex={0}>
+          <g
+            transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT +
+              MARGIN.TOP})`}
+            ref={this.axisX}
+            tabindex={0}
+          />
+          <g
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            ref={this.axisY}
+            tabindex={0}
+          />
+          <text className="histogram-y-axis-label" x={W} y={H}>
+            → distance (parsecs)
+          </text>
+          <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
+            {BINS.map((bin, i) => {
+              return (
+                <rect
+                  tabindex={0}
+                  key={i}
+                  data-n={`bin-${bin.x0}:${bin.x1}`}
+                  x={DISTANCE_SCALE(bin.x0)}
+                  y={COUNT_SCALE(bin.length)}
+                  width={CHART_WIDTH / NB_BINS}
+                  height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
+                />
+              );
+            })}
+          </g>
+        </svg>
+      </div>
     );
   }
 }

@@ -10,9 +10,10 @@ import { select } from "d3-selection";
 
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
-import { schemePastel1 } from "d3-scale-chromatic";
+import { schemePastel1, schemeDark2 } from "d3-scale-chromatic";
 import { axisLeft, axisBottom } from "d3-axis";
 import "./Scatterplot.css";
+
 const W = 1200;
 const H = 600;
 const MARGIN = { TOP: 20, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
@@ -49,7 +50,7 @@ export class Scatterplot extends React.Component {
     const ls = scaleLog()
       .domain(domain)
       .range(range)
-      .clamp(true);
+      .nice();
     return ls;
   };
   getBandScale = (domain, range) => {
@@ -58,10 +59,10 @@ export class Scatterplot extends React.Component {
       .range(range);
     return bs;
   };
-  getColorScale = domain => {
+  getColorScale = (domain, range) => {
     const cs = scaleOrdinal()
       .domain(domain)
-      .range(schemePastel1);
+      .range(range);
     return cs;
   };
   getRadiusScale = (domain, range) => {
@@ -73,34 +74,51 @@ export class Scatterplot extends React.Component {
 
   createAxisX = scale => {
     const g = select(this.axisX.current);
-    g.call(() => axisBottom(scale).ticks(4));
+    g.call(() => axisBottom(scale));
   };
   createAxisY = scale => {
     const g = select(this.axisX.current);
-    g.call(s => axisLeft(scale).ticks(4));
+    g.call(() => axisLeft(scale));
   };
   componentDidMount() {
-    this.createAxisX();
-    this.createAxisY();
+    const orbitalPeriodDomain = extent(planets, d => d.pl_orbper);
+    const orbitalPeriodScale = this.getLogScale(orbitalPeriodDomain, [
+      0,
+      CHART_WIDTH
+    ]);
+    const radiiExtent = extent(planets, d => d.pl_rade);
+    const planetRadiusScale = this.getLogScale(radiiExtent, [CHART_HEIGHT, 0]);
+
+    this.createAxisX(orbitalPeriodScale);
+    this.createAxisY(planetRadiusScale);
   }
 
   render() {
-    const years = Array.from(new Set(planets.map(d => d.pl_disc)));
-    const radii = extent(planets, d => d.pl_rade);
-    console.log("radii", radii);
+    // const years = Array.from(new Set(planets.map(d => d.pl_disc)));
 
-    const distanceScale = this.getLinearScale(
-      [0, max(planets, d => d.st_dist)],
-      [CHART_HEIGHT, 0]
-    );
-    const massScale = this.getLinearScale(
-      [0, max(planets, d => d.pl_masse)],
-      [0, CHART_WIDTH]
-    );
-    const yearScale = this.getBandScale(years, [0, CHART_WIDTH]);
-    const colors = this.getColorScale(DISCOVERY_METHODS);
-    const radiusScale = this.getRadiusScale(radii, [2, 15]);
-    const planetRadiusScale = this.getLinearScale(radii, [CHART_HEIGHT, 0]);
+    // const distanceScale = this.getLinearScale(
+    //   [0, max(planets, d => d.st_dist)],
+    //   [CHART_HEIGHT, 0]
+    // );
+    // const massScale = this.getLinearScale(
+    //   [0, max(planets, d => d.pl_masse)],
+    //   [0, CHART_WIDTH]
+    // );
+    // const yearScale = this.getBandScale(years, [0, CHART_WIDTH]);
+    // const radiusScale = this.getRadiusScale(radii, [2, 15]);
+
+    const colors = this.getColorScale(DISCOVERY_METHODS, schemeDark2);
+
+    const orbitalPeriodDomain = extent(planets, d => d.pl_orbper);
+    console.log("orbital period domain", orbitalPeriodDomain);
+    const orbitalPeriodScale = this.getLogScale(orbitalPeriodDomain, [
+      0,
+      CHART_WIDTH
+    ]);
+
+    const radiiExtent = extent(planets, d => d.pl_rade);
+    console.log("raddii domain", radiiExtent);
+    const planetRadiusScale = this.getLogScale(radiiExtent, [CHART_HEIGHT, 0]);
 
     return (
       <svg width={W} height={H}>
@@ -110,14 +128,22 @@ export class Scatterplot extends React.Component {
         />
         <g transform={`translate(0, ${MARGIN.TOP})`} ref={this.axisY} />
 
-        <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`} tabIndex={1}>
+        <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
           {planets.map(d => (
             <circle
-              cx={massScale(d.pl_masse)}
+              cx={orbitalPeriodScale(d.pl_orbper)}
               cy={planetRadiusScale(d.pl_rade)}
-              r={5}
+              r={2}
               fill={colors(d.pl_discmethod)}
+              stroke={colors(d.pl_discmethod)}
               className="circle"
+              onMouseEnter={() =>
+                console.log(
+                  `radus: ${d.pl_rade}, orbital period: ${
+                    d.pl_orbper
+                  }, discovery method: ${d.pl_discmethod}`
+                )
+              }
             />
           ))}
         </g>

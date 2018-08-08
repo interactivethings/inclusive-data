@@ -168,7 +168,7 @@ export class Streamgraph extends React.Component {
                   d={areaGenerator(d)}
                   data-n="stack-serie"
                   fill={colorScale(d.key)}
-                  tabindex={0}
+                  tabIndex={0}
                   onMouseDown={() => console.log(d.key)}
                 />
               );

@@ -5,7 +5,9 @@ import { select } from "d3-selection";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
 import "./Histogram.css";
+import { runInThisContext } from "vm";
 
+/** Constants */
 const W = 1200;
 const H = 600;
 const MARGIN = { TOP: 50, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
@@ -32,11 +34,14 @@ const COUNT_SCALE = scaleLinear()
   .range([CHART_HEIGHT, 0])
   .nice();
 
+/** Component */
 export class Histogram extends React.Component {
   constructor() {
     super();
     this.axisX = React.createRef();
     this.axisY = React.createRef();
+    this.dataGroup = React.createRef();
+    this.state = { areBarsFocusable: false, focusedBar: 4 };
   }
   createAxisX = scale => {
     const g = select(this.axisX.current);
@@ -51,6 +56,15 @@ export class Histogram extends React.Component {
     this.createAxisY(COUNT_SCALE);
   }
 
+  toggleBarsFocus = () => {
+    this.setState({ areBarsFocusable: !this.state.areBarsFocusable });
+  };
+  moveFocusToFirstBar = () => {
+    this.setState({ areBarsFocusable: !this.state.areBarsFocusable });
+  };
+  moveFocusToNextBar = () => {
+    this.setState({ focusedBar: this.state.focusedBar + 1 });
+  };
   render() {
     return (
       <div className="histogram-container">
@@ -89,34 +103,84 @@ export class Histogram extends React.Component {
             → distance (parsecs)
           </text>
           <g
+            ref={this.dataGroup}
             className="histogram-data"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             tabIndex={0}
             aria-label={`group of ${
               BINS.length
-            } histogram rectangles displaying the data`}
-            onKeyDown={() => console.log("keydown")}
+            } histogram rectangles displaying the data, press "Enter" to tab through single data points.`}
+            onKeyDown={e => e.keyCode === 13 && this.moveFocusToNextBar()}
           >
             {BINS.map((bin, i) => {
               return (
-                <rect
-                  className="histogram-bar"
-                  tabIndex={0}
-                  aria-label={`bin from distance ${bin.x0} and ${
-                    bin.x1
-                  } parsecs, contains ${bin.length} planets`}
-                  key={i}
-                  data-n={`bin-${bin.x0}:${bin.x1}`}
-                  x={DISTANCE_SCALE(bin.x0)}
-                  y={COUNT_SCALE(bin.length)}
-                  width={CHART_WIDTH / NB_BINS}
-                  height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
-                />
+                <React.Fragment>
+                  <Bar
+                    bin={bin}
+                    index={i}
+                    focusable={this.state.areBarsFocusable}
+                    focused={true}
+                    // focused={this.state.focusedBar === i ? true : false}
+                  />
+                </React.Fragment>
               );
             })}
           </g>
         </svg>
+        {BINS.map(bin => {
+          return (
+            <div
+              className="histogram-tooltip"
+              style={{
+                transform: `translate(${MARGIN.LEFT +
+                  DISTANCE_SCALE(bin.x0)}px, ${MARGIN.TOP +
+                  COUNT_SCALE(bin.length)}px)`
+              }}
+            >
+              <div className="histogram-tooltip-item">
+                {bin.length} planets within
+              </div>
+              <div className="histogram-tooltip-item">
+                {bin.x0}-{bin.x1} parsecs
+              </div>
+            </div>
+          );
+        })}
       </div>
+    );
+  }
+}
+
+class Bar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.bar = React.createRef();
+  }
+  componentDidMount() {
+    const { focused } = this.props;
+    if (focused) this.bar.current.focus();
+  }
+
+  render() {
+    const { bin, index, focusable } = this.props;
+
+    return (
+      <rect
+        ref={this.bar}
+        tabIndex={focusable ? 0 : -1}
+        className="histogram-bar"
+        id={`histogram-bar-${index}`}
+        aria-label={`bin from distance ${bin.x0} and ${
+          bin.x1
+        } parsecs, contains ${bin.length} planets`}
+        key={index}
+        data-n={`bin-${bin.x0}:${bin.x1}`}
+        x={DISTANCE_SCALE(bin.x0)}
+        y={COUNT_SCALE(bin.length)}
+        width={CHART_WIDTH / NB_BINS}
+        height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
+        // onKeyDown={e => e.keyCode === 27 && this.toggleBarsFocus()}
+      />
     );
   }
 }

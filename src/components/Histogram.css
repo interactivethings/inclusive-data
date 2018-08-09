@@ -1,3 +1,7 @@
+.histogram-container {
+  position: relative;
+}
+
 /** SVG */
 .histogram-svg:focus {
   background-color: #ededed;
@@ -44,4 +48,20 @@ rect.histogram-bar {
 rect.histogram-bar:focus {
   outline: none;
   fill: black;
+}
+
+/** Tooltip */
+.histogram-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.histogram-tooltip-item {
+  transform: translateX(-50%);
+  margin: 0.3em;
 }

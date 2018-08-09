@@ -1,13 +1,47 @@
-rect {
-  fill: crimson;
+/** SVG */
+.histogram-svg:focus {
+  background-color: #ededed;
+  outline: 0;
 }
 
-rect:focus {
-  outline: none;
-  fill: black;
-}
+/** AXIS */
 .histogram-y-axis-label {
   text-anchor: end;
   dominant-baseline: text-after-edge;
   font-size: 12px;
+}
+.histogram-axis .domain,
+.histogram-axis .tick > line {
+  stroke: none;
+}
+.histogram-axis.tick > text {
+  fill: grey;
+}
+.histogram-axis:focus {
+  outline: 0;
+}
+.histogram-axis:focus .domain,
+.histogram-axis:focus .tick > line {
+  stroke: black;
+}
+.histogram-axis:focus text {
+  fill: black;
+}
+.histogram-axis:focus tick {
+  fill: black;
+}
+
+/** DATA */
+.histogram-data:focus {
+  outline: 0;
+}
+.histogram-data:focus rect {
+  fill: black;
+}
+rect.histogram-bar {
+  fill: crimson;
+}
+rect.histogram-bar:focus {
+  outline: none;
+  fill: black;
 }

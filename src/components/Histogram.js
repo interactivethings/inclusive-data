@@ -40,11 +40,11 @@ export class Histogram extends React.Component {
   }
   createAxisX = scale => {
     const g = select(this.axisX.current);
-    g.call(axisBottom(scale));
+    g.call(axisBottom(scale).tickSize(-CHART_HEIGHT));
   };
   createAxisY = scale => {
     const g = select(this.axisY.current);
-    g.call(axisLeft(scale));
+    g.call(axisLeft(scale).tickSize(-CHART_WIDTH));
   };
   componentDidMount() {
     this.createAxisX(DISTANCE_SCALE);
@@ -58,12 +58,14 @@ export class Histogram extends React.Component {
           Distribution of confirmed exoplanets by their distance to the Sun.
         </h4>
         <svg
+          className="histogram-svg"
           width={W}
           height={H}
           tabIndex={0}
           aria-labelledby="#histogram-description"
         >
           <g
+            className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT +
               MARGIN.TOP})`}
             ref={this.axisX}
@@ -71,6 +73,7 @@ export class Histogram extends React.Component {
             aria-label={`horizontal axis of a linear scale from 0 to ${MAX_DISTANCE} parsecs`}
           />
           <g
+            className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisY}
             tabIndex={0}
@@ -86,6 +89,7 @@ export class Histogram extends React.Component {
             → distance (parsecs)
           </text>
           <g
+            className="histogram-data"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             tabIndex={0}
             aria-label={`group of ${
@@ -96,6 +100,7 @@ export class Histogram extends React.Component {
             {BINS.map((bin, i) => {
               return (
                 <rect
+                  className="histogram-bar"
                   tabIndex={0}
                   aria-label={`bin from distance ${bin.x0} and ${
                     bin.x1

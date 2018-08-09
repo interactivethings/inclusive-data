@@ -1,7 +1,7 @@
-path.stream {
+path.streamgraph-stream {
   stroke: transparent;
 }
-path.stream:focus {
+path.streamgraph-stream:focus {
   fill: black;
   outline: none;
 }
@@ -19,7 +19,7 @@ path.stream:focus {
   margin-right: 2em;
 }
 
-.domain,
-.tick > line {
+.streamgraph-axis.domain,
+.streamgraph-axis.tick > line {
   stroke: none;
 }

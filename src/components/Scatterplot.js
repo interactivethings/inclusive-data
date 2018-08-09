@@ -121,7 +121,13 @@ export class Scatterplot extends React.Component {
     const planetRadiusScale = this.getLogScale(radiiExtent, [CHART_HEIGHT, 0]);
 
     return (
-      <svg width={W} height={H}>
+      <svg
+        className="scatterplot-svg"
+        width={W}
+        height={H}
+        tabIndex={0}
+        // aria-labelledby="#scatterplot-description"
+      >
         <g
           transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT + MARGIN.TOP})`}
           ref={this.axisX}

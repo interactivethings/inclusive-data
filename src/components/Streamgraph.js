@@ -164,7 +164,7 @@ export class Streamgraph extends React.Component {
               return (
                 <React.Fragment>
                   <path
-                    className="stream"
+                    className="streamgraph-stream"
                     key={`stack-${d}`}
                     d={areaGenerator(d)}
                     data-n="stack-serie"
@@ -180,6 +180,7 @@ export class Streamgraph extends React.Component {
             })}
           </g>
           <g
+            className="streamgraph-axis"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisX}
             tabIndex={0}

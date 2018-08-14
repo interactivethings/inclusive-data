@@ -77,7 +77,8 @@ export class Streamgraph extends React.Component {
     this.overlay = React.createRef();
     this.state = {
       highlightedYear: null,
-      discMethod: null
+      discMethod: null,
+      displayHint: false
     };
   }
   getLinearScale = (domain, range) => {
@@ -161,7 +162,10 @@ export class Streamgraph extends React.Component {
       const dRight = YEARS[i] || dLeft;
       const closestYear = thisYear - dLeft > dRight - thisYear ? dRight : dLeft;
       const yearInArray = closestYear;
-      this.setState({ highlightedYear: YEARS.indexOf(yearInArray) });
+      this.setState(
+        { highlightedYear: YEARS.indexOf(yearInArray) },
+        this.focusLine
+      );
     }
   };
 
@@ -173,6 +177,7 @@ export class Streamgraph extends React.Component {
     e.preventDefault();
     e.stopPropagation();
     this.stackGroup.current.focus();
+    this.setState({ highlightedYear: null, discMethod: null });
   };
 
   moveFocusToCurrentYear = e => {

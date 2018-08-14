@@ -1,14 +1,16 @@
+body {
+  font-size: 1em;
+}
 .wrapper {
   width: 1280px;
   margin: 100px auto;
-
   background-color: white;
 }
 h2 {
   margin-top: 128px;
 }
 p {
-  line-height: 1.2;
+  line-height: 1.4;
   font-size: 1em;
   max-width: 640px;
 }

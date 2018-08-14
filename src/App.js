@@ -10,7 +10,7 @@ export class App extends React.Component {
       <div className="wrapper">
         <h1>How Does This Data Sound?</h1>
         <p>About Inclusive Data Visualization</p>
-        {/* <h2>Since when have astronomers been discovering planets?</h2>
+        <h2>Since when have astronomers been discovering planets?</h2>
         <p>
           An exoplanet or extrasolar planet is a planet outside our solar
           system. The first evidence of an exoplanet was noted as early as 1917,
@@ -25,7 +25,7 @@ export class App extends React.Component {
           indirect techniques of detection, mainly by radial velocity
           measurements and transit monitoring techniques.
         </p>
-        <Streamgraph /> */}
+        <Streamgraph />
         <h2>How far away have astronomers seen exoplanets?</h2>
         <p>
           The parsec (symbol: pc) is a unit of length used to measure large
@@ -39,7 +39,7 @@ export class App extends React.Component {
           the Sun.
         </p>
         <Histogram />
-        <h2>What type of planet for what type of discovery method?</h2>
+        <h2>Planets discovered by Kepler by size and distance to their star</h2>
         <Scatterplot />
       </div>
     );

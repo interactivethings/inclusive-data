@@ -72,10 +72,12 @@ export class Streamgraph extends React.Component {
     super();
     this.axisX = React.createRef();
     this.stackGroup = React.createRef();
+    this.stack = React.createRef();
     this.line = React.createRef();
     this.overlay = React.createRef();
     this.state = {
-      highlightedYear: null
+      highlightedYear: null,
+      discMethod: null
     };
   }
   getLinearScale = (domain, range) => {
@@ -168,14 +170,12 @@ export class Streamgraph extends React.Component {
   };
 
   moveFocusToStackGroup = e => {
-    console.log("move focus to stack groups");
     e.preventDefault();
     e.stopPropagation();
     this.stackGroup.current.focus();
   };
 
   moveFocusToCurrentYear = e => {
-    console.log("move focus to current year");
     if (e.keyCode === 39) {
       this.setState(
         {
@@ -204,7 +204,6 @@ export class Streamgraph extends React.Component {
   };
 
   moveFocusToNextYear = e => {
-    console.log("move focus to next year");
     e.stopPropagation();
     if (YEARS[this.state.highlightedYear] < YEAR_MAX) {
       this.setState(
@@ -218,7 +217,6 @@ export class Streamgraph extends React.Component {
   };
 
   moveFocusToPreviousYear = e => {
-    console.log("move focus to previous year");
     e.stopPropagation();
     if (YEARS[this.state.highlightedYear] > YEAR_MIN) {
       this.setState(
@@ -235,6 +233,60 @@ export class Streamgraph extends React.Component {
     this.line.current.focus();
   };
 
+  moveFocusToCurrentStack = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.keyCode === 40) {
+      // Arrow down
+      this.setState(
+        {
+          discMethod: this.state.discMethod > 0 ? this.state.discMethod : 0
+        },
+        this.focusStack
+      );
+    } else if (e.keyCode === 38) {
+      // Arrow up
+      this.setState(
+        {
+          discMethod:
+            this.state.discMethod < DISCOVERY_METHODS.length - 1 &&
+            this.state.discMethod > 0
+              ? this.state.discMethod
+              : DISCOVERY_METHODS.length - 1
+        },
+        this.focusStack
+      );
+    } else {
+      console.error("This key press is not handled");
+      return;
+    }
+  };
+  moveFocusToNextStack = e => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (this.state.discMethod < DISCOVERY_METHODS.length - 1) {
+      this.setState({ discMethod: this.state.discMethod + 1 }, this.focusStack);
+    } else {
+      this.setState({ discMethod: null });
+      this.moveFocusToStackGroup(e);
+    }
+  };
+  moveFocusToPreviousStack = e => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (
+      this.state.discMethod > 0 &&
+      this.state.discMethod <= DISCOVERY_METHODS.length - 1
+    ) {
+      this.setState({ discMethod: this.state.discMethod - 1 }, this.focusStack);
+    } else {
+      this.setState({ discMethod: null });
+      this.moveFocusToStackGroup(e);
+    }
+  };
+  focusStack = () => {
+    this.stack.current.focus();
+  };
   componentDidMount() {
     const timeScale = this.getLinearScale(TIME_DOMAIN, [0, CHART_WIDTH]);
     this.createAxisX(timeScale);
@@ -280,13 +332,19 @@ export class Streamgraph extends React.Component {
             onKeyDown={e =>
               e.keyCode === 39 || e.keyCode === 37
                 ? this.moveFocusToCurrentYear(e)
-                : null
+                : e.keyCode === 40 || e.keyCode === 38
+                  ? this.moveFocusToCurrentStack(e)
+                  : null
             }
           >
             {series.map((d, i) => {
               return (
                 <React.Fragment>
                   <path
+                    ref={
+                      d.key === DISCOVERY_METHODS[this.state.discMethod] &&
+                      this.stack
+                    }
                     className="streamgraph-stream"
                     key={`stack-${d}`}
                     d={areaGenerator(d)}
@@ -298,6 +356,13 @@ export class Streamgraph extends React.Component {
                       TIME_DOMAIN[1]
                     }, Minimum? Maximum? Average? Median? Standard Deviation?`}
                     onMouseDown={() => console.log(d.key)}
+                    onKeyDown={e =>
+                      e.keyCode === 40
+                        ? this.moveFocusToNextStack(e)
+                        : e.keyCode === 38
+                          ? this.moveFocusToPreviousStack(e)
+                          : null
+                    }
                   />
                 </React.Fragment>
               );

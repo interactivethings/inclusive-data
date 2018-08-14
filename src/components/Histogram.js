@@ -62,7 +62,10 @@ export class Histogram extends React.Component {
     this.createAxisY(COUNT_SCALE);
   }
 
-  moveFocusToDataGroup = () => {
+  moveFocusToDataGroup = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({ areBarsFocusable: false });
     this.dataGroup.current.focus();
   };
   moveFocusToCurrentDataPoint = e => {
@@ -98,7 +101,7 @@ export class Histogram extends React.Component {
         this.focusRectangle
       );
     } else {
-      this.moveFocusToDataGroup();
+      this.moveFocusToDataGroup(e);
       this.setState({ areBarsFocusable: false });
     }
   };
@@ -110,7 +113,7 @@ export class Histogram extends React.Component {
         this.focusRectangle
       );
     } else {
-      this.moveFocusToDataGroup();
+      this.moveFocusToDataGroup(e);
       this.setState({ areBarsFocusable: false });
     }
   };
@@ -185,7 +188,7 @@ export class Histogram extends React.Component {
                       : e.keyCode === 37 // Arrow-left
                         ? this.moveFocusToPreviousBar(e)
                         : e.keyCode === 9
-                          ? this.moveFocusToDataGroup()
+                          ? this.moveFocusToDataGroup(e)
                           : null
                   }
                   onClick={() => this.handleBarClick(i, bin.length)}

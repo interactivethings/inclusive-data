@@ -25,6 +25,7 @@ const DISTANCE_SCALE = scaleLinear()
   .domain([0, MAX_DISTANCE])
   .range([0, CHART_WIDTH])
   .nice();
+
 const BINS = histogram()
   .domain(DISTANCE_SCALE.domain())
   .thresholds(DISTANCE_SCALE.ticks(TARGET_NB_BINS))
@@ -39,6 +40,10 @@ const COUNT_SCALE = scaleLinear()
   .range([CHART_HEIGHT, 0])
   .nice();
 
+const TONE_SCALE = scaleLinear()
+  .domain([0, MAX_COUNT])
+  .range([0, 88]);
+
 /** Component */
 export class Histogram extends React.Component {
   constructor() {
@@ -47,7 +52,7 @@ export class Histogram extends React.Component {
     this.axisY = React.createRef();
     this.data = React.createRef();
     this.dataGroup = React.createRef();
-    this.state = { areBarsFocusable: false, focusedBar: 0 };
+    this.state = { areBarsFocusable: false, focusedBar: 0, displayHint: false };
   }
   createAxisX = scale => {
     const g = select(this.axisX.current);
@@ -65,15 +70,16 @@ export class Histogram extends React.Component {
   moveFocusToDataGroup = e => {
     e.preventDefault();
     e.stopPropagation();
-    this.setState({ areBarsFocusable: false });
+    this.setState({ areBarsFocusable: false, displayHint: true });
     this.dataGroup.current.focus();
   };
+
   moveFocusToCurrentDataPoint = e => {
-    this.dataGroup.current.blur();
     if (e.keyCode === 39) {
       this.setState(
         {
           areBarsFocusable: true,
+          displayHint: false,
           focusedBar: this.state.focusedBar > 0 ? this.state.focusedBar : 0
         },
         this.focusRectangle
@@ -83,6 +89,7 @@ export class Histogram extends React.Component {
       this.setState(
         {
           areBarsFocusable: true,
+          displayHint: false,
           focusedBar:
             this.state.focusedBar < NB_BINS - 1 && this.state.focusedBar > 0
               ? this.state.focusedBar
@@ -92,42 +99,62 @@ export class Histogram extends React.Component {
       );
     }
   };
+
   moveFocusToPreviousBar = e => {
     e.stopPropagation();
+    e.preventDefault();
     const { focusedBar } = this.state;
     if (focusedBar > 0) {
       this.setState(
         { focusedBar: this.state.focusedBar - 1 },
-        this.focusRectangle
+        this.focusRectangle,
+        this.playSound(BINS[this.state.focusedBar - 1].length)
       );
     } else {
       this.moveFocusToDataGroup(e);
       this.setState({ areBarsFocusable: false });
     }
   };
+
   moveFocusToNextBar = e => {
     e.stopPropagation();
+    e.preventDefault();
     if (this.state.focusedBar < NB_BINS - 1) {
       this.setState(
-        { focusedBar: this.state.focusedBar + 1 },
-        this.focusRectangle
+        { focusedBar: this.state.focusedBar + 1, displayHint: false },
+        this.focusRectangle,
+        this.playSound(BINS[this.state.focusedBar + 1].length)
       );
     } else {
       this.moveFocusToDataGroup(e);
       this.setState({ areBarsFocusable: false });
     }
   };
+
   focusRectangle = () => {
     this.data.current.focus();
   };
-  // playSound = () => {
-  //   const note = Tone.Frequency("A1").transpose(transposeValue);
-  //   synth.triggerAttackRelease(note, "8n");
-  // };
-  handleBarClick = (index, transposeValue) => {
-    const note = Tone.Frequency("A1").transpose(transposeValue);
+
+  playSound = count => {
+    const note = Tone.Frequency("A1").transpose(TONE_SCALE(count));
     synth.triggerAttackRelease(note, "8n");
-    this.setState({ focusedBar: index, areBarsFocusable: true });
+  };
+
+  handleBarClick = (index, count) => {
+    this.setState({
+      focusedBar: index,
+      areBarsFocusable: true,
+      displayHint: false
+    });
+    this.playSound(count);
+  };
+
+  handleDataGroupFocus = () => {
+    this.setState({ displayHint: true });
+  };
+
+  handleDataGroupBlur = () => {
+    this.setState({ displayHint: false });
   };
 
   render() {
@@ -177,6 +204,8 @@ export class Histogram extends React.Component {
                 ? this.moveFocusToCurrentDataPoint(e)
                 : null
             }
+            onFocus={() => this.handleDataGroupFocus()}
+            onBlur={() => this.handleDataGroupBlur()}
           >
             {BINS.map((bin, i) => {
               return (
@@ -184,7 +213,7 @@ export class Histogram extends React.Component {
                   ref={i === this.state.focusedBar && this.data}
                   onKeyDown={e =>
                     e.keyCode === 39 // Arrow-right
-                      ? this.moveFocusToNextBar(e, bin.length)
+                      ? this.moveFocusToNextBar(e)
                       : e.keyCode === 37 // Arrow-left
                         ? this.moveFocusToPreviousBar(e)
                         : e.keyCode === 9
@@ -207,6 +236,27 @@ export class Histogram extends React.Component {
                 />
               );
             })}
+          </g>
+
+          <g
+            className="histogram-hint"
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            style={{ display: this.state.displayHint ? "block" : "none" }}
+          >
+            <rect
+              x={0}
+              y={0}
+              width={CHART_WIDTH}
+              height={CHART_HEIGHT}
+              className="histogram-hint-rect"
+            />
+            <text
+              x={CHART_WIDTH / 2}
+              y={CHART_HEIGHT / 2}
+              className="histogram-hint-text"
+            >
+              Use left and right arrows to navigate between data points
+            </text>
           </g>
         </svg>
         {BINS.map((bin, i) => {

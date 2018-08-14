@@ -2,6 +2,15 @@
   position: relative;
 }
 
+/** Hint */
+.histogram-hint-rect {
+  fill-opacity: 0.2;
+  pointer-events: none;
+}
+.histogram-hint-text {
+  text-anchor: middle;
+  pointer-events: none;
+}
 /** SVG */
 .histogram-svg:focus {
   background-color: #ededed;

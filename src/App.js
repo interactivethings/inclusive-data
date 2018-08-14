@@ -38,6 +38,11 @@ export class App extends React.Component {
           visible to the unaided eye in the night sky are within 500 parsecs of
           the Sun.
         </p>
+        <p>
+          Each bar emits a sound when focused, using an equal-temperament
+          chromatic scale from A1 to A8, ie with 84 semitone intervals used as
+          the range for the bin count domain [0, 472]
+        </p>
         <Histogram />
         <h2>Planets discovered by Kepler by size and distance to their star</h2>
         <Scatterplot />

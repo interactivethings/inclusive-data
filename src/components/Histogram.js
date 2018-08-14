@@ -42,7 +42,7 @@ const COUNT_SCALE = scaleLinear()
 
 const TONE_SCALE = scaleLinear()
   .domain([0, MAX_COUNT])
-  .range([0, 88]);
+  .range([0, 84]); // A1 to A8
 
 /** Component */
 export class Histogram extends React.Component {

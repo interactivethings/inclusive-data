@@ -5,7 +5,10 @@ import { select } from "d3-selection";
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
 import "./Histogram.css";
-import { runInThisContext } from "vm";
+import Tone from "tone";
+
+// //create a synth and connect it to the master output (your speakers)
+const synth = new Tone.Synth().toMaster();
 
 /** Constants */
 const W = 1200;
@@ -13,7 +16,7 @@ const H = 600;
 const MARGIN = { TOP: 50, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-const NB_BINS = 120;
+const TARGET_NB_BINS = 125;
 
 const FILTERED_PLANETS = planets.filter(d => d.st_dist < 2000);
 
@@ -24,8 +27,10 @@ const DISTANCE_SCALE = scaleLinear()
   .nice();
 const BINS = histogram()
   .domain(DISTANCE_SCALE.domain())
-  .thresholds(DISTANCE_SCALE.ticks(NB_BINS))
+  .thresholds(DISTANCE_SCALE.ticks(TARGET_NB_BINS))
   .value(d => d.st_dist)(FILTERED_PLANETS);
+
+const NB_BINS = DISTANCE_SCALE.ticks(TARGET_NB_BINS).length;
 
 const MIN_COUNT = min(BINS, d => d.length);
 const MAX_COUNT = max(BINS, d => d.length);
@@ -40,8 +45,9 @@ export class Histogram extends React.Component {
     super();
     this.axisX = React.createRef();
     this.axisY = React.createRef();
+    this.data = React.createRef();
     this.dataGroup = React.createRef();
-    this.state = { areBarsFocusable: false, focusedBar: 4 };
+    this.state = { areBarsFocusable: false, focusedBar: 0 };
   }
   createAxisX = scale => {
     const g = select(this.axisX.current);
@@ -56,15 +62,71 @@ export class Histogram extends React.Component {
     this.createAxisY(COUNT_SCALE);
   }
 
-  toggleBarsFocus = () => {
-    this.setState({ areBarsFocusable: !this.state.areBarsFocusable });
+  moveFocusToDataGroup = () => {
+    this.dataGroup.current.focus();
   };
-  moveFocusToFirstBar = () => {
-    this.setState({ areBarsFocusable: !this.state.areBarsFocusable });
+  moveFocusToCurrentDataPoint = e => {
+    this.dataGroup.current.blur();
+    if (e.keyCode === 39) {
+      this.setState(
+        {
+          areBarsFocusable: true,
+          focusedBar: this.state.focusedBar > 0 ? this.state.focusedBar : 0
+        },
+        this.focusRectangle
+      );
+    } else {
+      // if (e.keyCode === 37)
+      this.setState(
+        {
+          areBarsFocusable: true,
+          focusedBar:
+            this.state.focusedBar < NB_BINS - 1 && this.state.focusedBar > 0
+              ? this.state.focusedBar
+              : NB_BINS - 1
+        },
+        this.focusRectangle
+      );
+    }
   };
-  moveFocusToNextBar = () => {
-    this.setState({ focusedBar: this.state.focusedBar + 1 });
+  moveFocusToPreviousBar = e => {
+    e.stopPropagation();
+    const { focusedBar } = this.state;
+    if (focusedBar > 0) {
+      this.setState(
+        { focusedBar: this.state.focusedBar - 1 },
+        this.focusRectangle
+      );
+    } else {
+      this.moveFocusToDataGroup();
+      this.setState({ areBarsFocusable: false });
+    }
   };
+  moveFocusToNextBar = e => {
+    e.stopPropagation();
+    if (this.state.focusedBar < NB_BINS - 1) {
+      this.setState(
+        { focusedBar: this.state.focusedBar + 1 },
+        this.focusRectangle
+      );
+    } else {
+      this.moveFocusToDataGroup();
+      this.setState({ areBarsFocusable: false });
+    }
+  };
+  focusRectangle = () => {
+    this.data.current.focus();
+  };
+  // playSound = () => {
+  //   const note = Tone.Frequency("A1").transpose(transposeValue);
+  //   synth.triggerAttackRelease(note, "8n");
+  // };
+  handleBarClick = (index, transposeValue) => {
+    const note = Tone.Frequency("A1").transpose(transposeValue);
+    synth.triggerAttackRelease(note, "8n");
+    this.setState({ focusedBar: index, areBarsFocusable: true });
+  };
+
   render() {
     return (
       <div className="histogram-container">
@@ -103,84 +165,69 @@ export class Histogram extends React.Component {
             → distance (parsecs)
           </text>
           <g
-            ref={this.dataGroup}
             className="histogram-data"
-            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             tabIndex={0}
-            aria-label={`group of ${
-              BINS.length
-            } histogram rectangles displaying the data, press "Enter" to tab through single data points.`}
-            onKeyDown={e => e.keyCode === 13 && this.moveFocusToNextBar()}
+            ref={this.dataGroup}
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            onKeyDown={e =>
+              e.keyCode === 39 || e.keyCode === 37
+                ? this.moveFocusToCurrentDataPoint(e)
+                : null
+            }
           >
             {BINS.map((bin, i) => {
               return (
-                <React.Fragment>
-                  <Bar
-                    bin={bin}
-                    index={i}
-                    focusable={this.state.areBarsFocusable}
-                    focused={true}
-                    // focused={this.state.focusedBar === i ? true : false}
-                  />
-                </React.Fragment>
+                <rect
+                  ref={i === this.state.focusedBar && this.data}
+                  onKeyDown={e =>
+                    e.keyCode === 39 // Arrow-right
+                      ? this.moveFocusToNextBar(e, bin.length)
+                      : e.keyCode === 37 // Arrow-left
+                        ? this.moveFocusToPreviousBar(e)
+                        : e.keyCode === 9
+                          ? this.moveFocusToDataGroup()
+                          : null
+                  }
+                  onClick={() => this.handleBarClick(i, bin.length)}
+                  tabIndex={-1}
+                  className="histogram-bar"
+                  id={`histogram-bar-${i}`}
+                  aria-label={`bin from distance ${bin.x0} and ${
+                    bin.x1
+                  } parsecs, contains ${bin.length} planets`}
+                  key={i}
+                  data-n={`bin-${bin.x0}:${bin.x1}`}
+                  x={DISTANCE_SCALE(bin.x0)}
+                  y={COUNT_SCALE(bin.length)}
+                  width={CHART_WIDTH / NB_BINS}
+                  height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
+                />
               );
             })}
           </g>
         </svg>
-        {BINS.map(bin => {
+        {BINS.map((bin, i) => {
           return (
             <div
               className="histogram-tooltip"
               style={{
                 transform: `translate(${MARGIN.LEFT +
                   DISTANCE_SCALE(bin.x0)}px, ${MARGIN.TOP +
-                  COUNT_SCALE(bin.length)}px)`
+                  COUNT_SCALE(bin.length)}px)`,
+                display:
+                  this.state.areBarsFocusable && i === this.state.focusedBar
+                    ? "block"
+                    : "none"
               }}
             >
               <div className="histogram-tooltip-item">
-                {bin.length} planets within
-              </div>
-              <div className="histogram-tooltip-item">
+                {bin.length} planets within <br />
                 {bin.x0}-{bin.x1} parsecs
               </div>
             </div>
           );
         })}
       </div>
-    );
-  }
-}
-
-class Bar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.bar = React.createRef();
-  }
-  componentDidMount() {
-    const { focused } = this.props;
-    if (focused) this.bar.current.focus();
-  }
-
-  render() {
-    const { bin, index, focusable } = this.props;
-
-    return (
-      <rect
-        ref={this.bar}
-        tabIndex={focusable ? 0 : -1}
-        className="histogram-bar"
-        id={`histogram-bar-${index}`}
-        aria-label={`bin from distance ${bin.x0} and ${
-          bin.x1
-        } parsecs, contains ${bin.length} planets`}
-        key={index}
-        data-n={`bin-${bin.x0}:${bin.x1}`}
-        x={DISTANCE_SCALE(bin.x0)}
-        y={COUNT_SCALE(bin.length)}
-        width={CHART_WIDTH / NB_BINS}
-        height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
-        // onKeyDown={e => e.keyCode === 27 && this.toggleBarsFocus()}
-      />
     );
   }
 }

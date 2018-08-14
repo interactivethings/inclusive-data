@@ -60,7 +60,10 @@ path.streamgraph-stream:focus {
 .streamgraph-overlay-line {
   stroke: black;
   stroke-width: 1px;
-  stroke-dasharray: 1em;
+  /* stroke-dasharray: 1em; */
+}
+.streamgraph-overlay-line:focus {
+  outline: 0;
 }
 .streamgraph-tooltip {
   overflow: visible;

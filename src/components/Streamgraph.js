@@ -14,7 +14,7 @@ import { select } from "d3-selection";
 import { format } from "d3-format";
 
 import * as React from "react";
-import planets from "../data/tidy/planets.json";
+import PLANETS from "../data/tidy/planets.json";
 import "./Streamgraph.css";
 
 const W = 1200;
@@ -22,7 +22,13 @@ const H = 600;
 const MARGIN = { TOP: 50, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-const YEARS = Array.from(new Set(planets.map(d => d.pl_disc))).sort();
+const YEARS = Array.from(
+  new Set(PLANETS.filter(d => d.pl_disc !== 1989).map(d => d.pl_disc))
+).sort();
+const TIME_DOMAIN = [1992, 2018];
+
+const YEAR_MIN = TIME_DOMAIN[0];
+const YEAR_MAX = TIME_DOMAIN[1];
 const OFFSET = 32;
 const DISCOVERY_METHODS_ALL = [
   "Radial Velocity",
@@ -66,6 +72,7 @@ export class Streamgraph extends React.Component {
     super();
     this.axisX = React.createRef();
     this.stackGroup = React.createRef();
+    this.line = React.createRef();
     this.overlay = React.createRef();
     this.state = {
       highlightedYear: null
@@ -139,8 +146,7 @@ export class Streamgraph extends React.Component {
   };
 
   highlight = e => {
-    const timeDomain = [1992, 2018];
-    const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
+    const timeScale = this.getLinearScale(TIME_DOMAIN, [0, CHART_WIDTH]);
 
     const mouseX =
       e.nativeEvent.clientX - this.overlay.current.getBoundingClientRect().left;
@@ -153,29 +159,97 @@ export class Streamgraph extends React.Component {
       const dRight = YEARS[i] || dLeft;
       const closestYear = thisYear - dLeft > dRight - thisYear ? dRight : dLeft;
       const yearInArray = closestYear;
-      this.setState({ highlightedYear: yearInArray });
+      this.setState({ highlightedYear: YEARS.indexOf(yearInArray) });
     }
   };
 
   lowlight = () => {
     this.setState({ highlightedYear: null });
   };
+
+  moveFocusToStackGroup = e => {
+    console.log("move focus to stack groups");
+    e.preventDefault();
+    e.stopPropagation();
+    this.stackGroup.current.focus();
+  };
+
+  moveFocusToCurrentYear = e => {
+    console.log("move focus to current year");
+    if (e.keyCode === 39) {
+      this.setState(
+        {
+          highlightedYear:
+            YEARS[this.state.highlightedYear] > YEAR_MIN
+              ? this.state.highlightedYear
+              : 0
+        },
+        this.focusLine
+      );
+    } else if (e.keyCode === 37) {
+      this.setState(
+        {
+          highlightedYear:
+            YEARS[this.state.highlightedYear] < YEAR_MAX &&
+            this.state.highlightedYear > 0
+              ? this.state.highlightedYear
+              : YEARS.indexOf(YEAR_MAX)
+        },
+        this.focusLine
+      );
+    } else {
+      console.error("This key press is not handled");
+      return;
+    }
+  };
+
+  moveFocusToNextYear = e => {
+    console.log("move focus to next year");
+    e.stopPropagation();
+    if (YEARS[this.state.highlightedYear] < YEAR_MAX) {
+      this.setState(
+        { highlightedYear: this.state.highlightedYear + 1 },
+        this.focusLine
+      );
+    } else {
+      this.setState({ highlightedYear: null });
+      this.moveFocusToStackGroup(e);
+    }
+  };
+
+  moveFocusToPreviousYear = e => {
+    console.log("move focus to previous year");
+    e.stopPropagation();
+    if (YEARS[this.state.highlightedYear] > YEAR_MIN) {
+      this.setState(
+        { highlightedYear: this.state.highlightedYear - 1 },
+        this.focusLine
+      );
+    } else {
+      this.setState({ highlightedYear: null });
+      this.moveFocusToStackGroup(e);
+    }
+  };
+
+  focusLine = () => {
+    this.line.current.focus();
+  };
+
   componentDidMount() {
-    const timeDomain = [1992, 2018];
-    const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
+    const timeScale = this.getLinearScale(TIME_DOMAIN, [0, CHART_WIDTH]);
     this.createAxisX(timeScale);
   }
+
   render() {
-    const series = this.getStackedData(planets);
+    const series = this.getStackedData(PLANETS);
 
     const stackMax = layer => {
       return max(layer, d => d[1]);
     };
 
-    const timeDomain = [1992, 2018];
     const countDomain = [0, max(series, stackMax)];
 
-    const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
+    const timeScale = this.getLinearScale(TIME_DOMAIN, [0, CHART_WIDTH]);
     const countScale = this.getLinearScale(countDomain, [CHART_HEIGHT / 2, 0]);
     const colorScale = this.getColorScale(DISCOVERY_METHODS, schemeDark2);
 
@@ -193,8 +267,8 @@ export class Streamgraph extends React.Component {
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisX}
             tabIndex={0}
-            aria-label={`horizontal axis, timeline from ${timeDomain[0]} to ${
-              timeDomain[1]
+            aria-label={`horizontal axis, timeline from ${TIME_DOMAIN[0]} to ${
+              TIME_DOMAIN[1]
             }`}
           />
 
@@ -203,6 +277,11 @@ export class Streamgraph extends React.Component {
             ref={this.stackGroup}
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             className="streamgraph-stack-group"
+            onKeyDown={e =>
+              e.keyCode === 39 || e.keyCode === 37
+                ? this.moveFocusToCurrentYear(e)
+                : null
+            }
           >
             {series.map((d, i) => {
               return (
@@ -212,11 +291,11 @@ export class Streamgraph extends React.Component {
                     key={`stack-${d}`}
                     d={areaGenerator(d)}
                     fill={colorScale(d.key)}
-                    tabIndex={0}
+                    tabIndex={-1}
                     aria-label={`area of the number of planets discovered by ${
                       d.key
-                    } from ${timeDomain[0]} to ${
-                      timeDomain[1]
+                    } from ${TIME_DOMAIN[0]} to ${
+                      TIME_DOMAIN[1]
                     }, Minimum? Maximum? Average? Median? Standard Deviation?`}
                     onMouseDown={() => console.log(d.key)}
                   />
@@ -226,24 +305,36 @@ export class Streamgraph extends React.Component {
           </g>
           {YEARS.map(y => (
             <line
+              ref={y === YEARS[this.state.highlightedYear] && this.line}
               aria-labelledby={`#streamgraph-tooltip-${y}`}
               className="streamgraph-overlay-line"
               transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+              tabIndex={-1}
               x1={timeScale(y)}
               y1={OFFSET}
               x2={timeScale(y)}
               y2={CHART_HEIGHT}
               style={{
-                display: y === this.state.highlightedYear ? "block" : "none"
+                display:
+                  y === YEARS[this.state.highlightedYear] ? "block" : "none"
               }}
+              onKeyDown={e =>
+                e.keyCode === 39
+                  ? this.moveFocusToNextYear(e)
+                  : e.keyCode === 37
+                    ? this.moveFocusToPreviousYear(e)
+                    : e.keyCode === 9
+                      ? this.moveFocusToStackGroup(e)
+                      : null
+              }
             />
           ))}
           <rect
             ref={this.overlay}
             className="streamgraph-overlay"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
-            x={timeScale(timeDomain[0])}
-            width={timeScale(timeDomain[1])}
+            x={timeScale(TIME_DOMAIN[0])}
+            width={timeScale(TIME_DOMAIN[1])}
             y={0}
             height={CHART_HEIGHT}
             onMouseMove={e => {
@@ -261,24 +352,25 @@ export class Streamgraph extends React.Component {
               transform: `translate(${MARGIN.LEFT +
                 OFFSET / 2 +
                 timeScale(y)}px, ${MARGIN.TOP + OFFSET + OFFSET / 2}px)`,
-              display: y === this.state.highlightedYear ? "block" : "none"
+              display:
+                y === YEARS[this.state.highlightedYear] ? "block" : "none"
             }}
           >
             <div className="streamgraph-tooltip-item">
-              {this.state.highlightedYear} <br />
+              {YEARS[this.state.highlightedYear]} <br />
               {series[0].key}:{" "}
               {series[0]
-                .filter(d => d.data.year === this.state.highlightedYear)
+                .filter(d => d.data.year === YEARS[this.state.highlightedYear])
                 .map(d => d.data["Radial Velocity"])}
               <br />
               {series[1].key}:{" "}
               {series[1]
-                .filter(d => d.data.year === this.state.highlightedYear)
+                .filter(d => d.data.year === YEARS[this.state.highlightedYear])
                 .map(d => d.data["Transit"])}
               <br />
               {series[2].key}:{" "}
               {series[2]
-                .filter(d => d.data.year === this.state.highlightedYear)
+                .filter(d => d.data.year === YEARS[this.state.highlightedYear])
                 .map(d => d.data["Other methods"])}
               <br />
             </div>

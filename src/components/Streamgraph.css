@@ -1,10 +1,30 @@
+.streamgraph-container {
+  position: relative;
+}
+
+/** SVG */
+.streamgraph-svg:focus {
+  background-color: #ededed;
+  outline: 0;
+}
+
+/** Data */
+.streamgraph-stack-group:focus {
+  outline: 0;
+}
+.streamgraph-stack-group:focus path {
+  fill: black;
+  stroke: grey;
+}
 path.streamgraph-stream {
-  stroke: transparent;
+  stroke: none;
 }
 path.streamgraph-stream:focus {
   fill: black;
   outline: none;
 }
+
+/** Legend */
 .streamgraph-legend-group {
   display: flex;
   justify-content: flex-start;
@@ -19,7 +39,49 @@ path.streamgraph-stream:focus {
   margin-right: 2em;
 }
 
-.streamgraph-axis.domain,
-.streamgraph-axis.tick > line {
+/** Axis */
+.streamgraph-axis g.tick > text {
+  font-size: 16px;
+}
+.streamgraph-axis path.domain {
   stroke: none;
+}
+.streamgraph-axis g.tick > line {
+  stroke: none;
+}
+.streamgraph-axis:focus {
+  outline: 0;
+}
+.streamgraph-axis:focus g.tick > line {
+  stroke: black;
+}
+
+/** Overlay */
+.streamgraph-overlay-line {
+  stroke: black;
+  stroke-width: 1px;
+  stroke-dasharray: 1em;
+}
+.streamgraph-tooltip {
+  overflow: visible;
+  pointer-events: none;
+  position: absolute;
+  background: black;
+  color: white;
+  top: 0;
+  left: 0;
+  font-size: 1em;
+  line-height: 1.4em;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-top: -1.1em;
+}
+.streamgraph-tooltip-item {
+  margin: 0.5em;
+}
+.streamgraph-overlay {
+  fill: pink;
+  opacity: 0;
 }

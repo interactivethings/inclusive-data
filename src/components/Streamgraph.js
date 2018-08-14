@@ -1,5 +1,5 @@
-import { max } from "d3-array";
-import { axisBottom } from "d3-axis";
+import { max, bisector } from "d3-array";
+import { axisTop } from "d3-axis";
 import { nest } from "d3-collection";
 import { scaleLinear, scaleOrdinal } from "d3-scale";
 import { schemeDark2 } from "d3-scale-chromatic";
@@ -11,6 +11,7 @@ import {
   stackOrderInsideOut
 } from "d3-shape";
 import { select } from "d3-selection";
+import { format } from "d3-format";
 
 import * as React from "react";
 import planets from "../data/tidy/planets.json";
@@ -18,10 +19,11 @@ import "./Streamgraph.css";
 
 const W = 1200;
 const H = 600;
-const MARGIN = { TOP: 20, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
+const MARGIN = { TOP: 50, RIGHT: 20, BOTTOM: 20, LEFT: 20 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-
+const YEARS = Array.from(new Set(planets.map(d => d.pl_disc))).sort();
+const OFFSET = 32;
 const DISCOVERY_METHODS_ALL = [
   "Radial Velocity",
   "Imaging",
@@ -64,6 +66,10 @@ export class Streamgraph extends React.Component {
     super();
     this.axisX = React.createRef();
     this.stackGroup = React.createRef();
+    this.overlay = React.createRef();
+    this.state = {
+      highlightedYear: null
+    };
   }
   getLinearScale = (domain, range) => {
     const ls = scaleLinear()
@@ -124,9 +130,36 @@ export class Streamgraph extends React.Component {
 
   createAxisX = scale => {
     const g = select(this.axisX.current);
-    g.call(axisBottom(scale));
+    g.call(
+      axisTop(scale)
+        .tickFormat(format("d"))
+        .tickSize(-CHART_HEIGHT)
+    );
+    g.attr("class", "streamgraph-axis");
   };
 
+  highlight = e => {
+    const timeDomain = [1992, 2018];
+    const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
+
+    const mouseX =
+      e.nativeEvent.clientX - this.overlay.current.getBoundingClientRect().left;
+    const bisectYear = bisector((x, date) => x - date).left;
+    const thisYear = timeScale.invert(mouseX);
+
+    if (thisYear) {
+      const i = bisectYear(YEARS, thisYear, 1);
+      const dLeft = YEARS[i - 1];
+      const dRight = YEARS[i] || dLeft;
+      const closestYear = thisYear - dLeft > dRight - thisYear ? dRight : dLeft;
+      const yearInArray = closestYear;
+      this.setState({ highlightedYear: yearInArray });
+    }
+  };
+
+  lowlight = () => {
+    this.setState({ highlightedYear: null });
+  };
   componentDidMount() {
     const timeDomain = [1992, 2018];
     const timeScale = this.getLinearScale(timeDomain, [0, CHART_WIDTH]);
@@ -153,12 +186,23 @@ export class Streamgraph extends React.Component {
       .curve(curveBasis);
 
     return (
-      <div className="streamgraph-root">
-        <svg width={W} height={H}>
+      <div className="streamgraph-container">
+        <svg width={W} height={H} tabIndex={0} className="streamgraph-svg">
           <g
+            className="streamgraph-axis"
+            transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+            ref={this.axisX}
+            tabIndex={0}
+            aria-label={`horizontal axis, timeline from ${timeDomain[0]} to ${
+              timeDomain[1]
+            }`}
+          />
+
+          <g
+            tabIndex={0}
             ref={this.stackGroup}
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
-            data-n="stacks-group"
+            className="streamgraph-stack-group"
           >
             {series.map((d, i) => {
               return (
@@ -167,26 +211,79 @@ export class Streamgraph extends React.Component {
                     className="streamgraph-stream"
                     key={`stack-${d}`}
                     d={areaGenerator(d)}
-                    data-n="stack-serie"
                     fill={colorScale(d.key)}
                     tabIndex={0}
+                    aria-label={`area of the number of planets discovered by ${
+                      d.key
+                    } from ${timeDomain[0]} to ${
+                      timeDomain[1]
+                    }, Minimum? Maximum? Average? Median? Standard Deviation?`}
                     onMouseDown={() => console.log(d.key)}
                   />
-                  {/* <text x={polygonCentroid(d)[0]} y={polygonCentroid(d)[1]}>
-                    {d.key}
-                  </text> */}
                 </React.Fragment>
               );
             })}
           </g>
-          <g
-            className="streamgraph-axis"
+          {YEARS.map(y => (
+            <line
+              aria-labelledby={`#streamgraph-tooltip-${y}`}
+              className="streamgraph-overlay-line"
+              transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
+              x1={timeScale(y)}
+              y1={OFFSET}
+              x2={timeScale(y)}
+              y2={CHART_HEIGHT}
+              style={{
+                display: y === this.state.highlightedYear ? "block" : "none"
+              }}
+            />
+          ))}
+          <rect
+            ref={this.overlay}
+            className="streamgraph-overlay"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
-            ref={this.axisX}
-            tabIndex={0}
-            aria-label={``}
+            x={timeScale(timeDomain[0])}
+            width={timeScale(timeDomain[1])}
+            y={0}
+            height={CHART_HEIGHT}
+            onMouseMove={e => {
+              this.highlight(e);
+            }}
+            onMouseOut={this.lowlight}
+            onBlur={this.lowlight}
           />
         </svg>
+        {YEARS.map(y => (
+          <div
+            id={`streamgraph-tooltip-${y}`}
+            className="streamgraph-tooltip"
+            style={{
+              transform: `translate(${MARGIN.LEFT +
+                OFFSET / 2 +
+                timeScale(y)}px, ${MARGIN.TOP + OFFSET + OFFSET / 2}px)`,
+              display: y === this.state.highlightedYear ? "block" : "none"
+            }}
+          >
+            <div className="streamgraph-tooltip-item">
+              {this.state.highlightedYear} <br />
+              {series[0].key}:{" "}
+              {series[0]
+                .filter(d => d.data.year === this.state.highlightedYear)
+                .map(d => d.data["Radial Velocity"])}
+              <br />
+              {series[1].key}:{" "}
+              {series[1]
+                .filter(d => d.data.year === this.state.highlightedYear)
+                .map(d => d.data["Transit"])}
+              <br />
+              {series[2].key}:{" "}
+              {series[2]
+                .filter(d => d.data.year === this.state.highlightedYear)
+                .map(d => d.data["Other methods"])}
+              <br />
+            </div>
+          </div>
+        ))}
         <div className="streamgraph-legend-group">
           {series.map(d => (
             <React.Fragment>

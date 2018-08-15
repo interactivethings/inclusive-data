@@ -80,9 +80,13 @@ export class Histogram extends React.Component {
         {
           areBarsFocusable: true,
           displayHint: false,
-          focusedBar: this.state.focusedBar > 0 ? this.state.focusedBar : 0
+          focusedBar:
+            this.state.focusedBar > 0 && this.state.focusedBar !== NB_BINS - 1
+              ? this.state.focusedBar
+              : 0
         },
-        this.focusRectangle
+        this.focusRectangle,
+        this.playSound(BINS[this.state.focusedBar].length)
       );
     } else {
       // if (e.keyCode === 37)
@@ -95,7 +99,8 @@ export class Histogram extends React.Component {
               ? this.state.focusedBar
               : NB_BINS - 1
         },
-        this.focusRectangle
+        this.focusRectangle,
+        this.playSound(BINS[this.state.focusedBar].length)
       );
     }
   };
@@ -106,7 +111,7 @@ export class Histogram extends React.Component {
     const { focusedBar } = this.state;
     if (focusedBar > 0) {
       this.setState(
-        { focusedBar: this.state.focusedBar - 1 },
+        { focusedBar: this.state.focusedBar - 1, displayHint: false },
         this.focusRectangle,
         this.playSound(BINS[this.state.focusedBar - 1].length)
       );
@@ -255,7 +260,7 @@ export class Histogram extends React.Component {
               y={CHART_HEIGHT / 2}
               className="histogram-hint-text"
             >
-              Use left and right arrows to navigate between data points
+              ← Use left and right arrows to navigate between data points →
             </text>
           </g>
         </svg>

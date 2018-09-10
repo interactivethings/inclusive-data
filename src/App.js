@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./App.css";
 import { Streamgraph } from "./components/Streamgraph";
-import { Scatterplot } from "./components/Scatterplot";
+import { Scatterplot } from "./components/Scatterplot.phl";
 import { Histogram } from "./components/Histogram";
 
 export class App extends React.Component {
@@ -44,7 +44,7 @@ export class App extends React.Component {
           the range for the bin count domain [0, 472]
         </p>
         <Histogram />
-        <h2>Planets discovered by Kepler by size and distance to their star</h2>
+        <h2>CHZ</h2>
         <Scatterplot />
       </div>
     );

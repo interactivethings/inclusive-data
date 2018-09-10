@@ -1,18 +1,16 @@
-import { max, extent } from "d3-array";
+import { extent } from "d3-array";
+import { axisBottom, axisLeft } from "d3-axis";
 import {
   scaleBand,
   scaleLinear,
+  scaleLog,
   scaleOrdinal,
-  scaleSqrt,
-  scaleLog
+  scaleSqrt
 } from "d3-scale";
-import { line } from "d3-shape";
+import { schemeDark2 } from "d3-scale-chromatic";
 import { select } from "d3-selection";
-import { polygonHull } from "d3-polygon";
 import * as React from "react";
-import planets from "../data/tidy/planets.json";
-import { schemePastel1, schemeDark2 } from "d3-scale-chromatic";
-import { axisLeft, axisBottom } from "d3-axis";
+import planets from "../data/tidy/phl.json";
 import "./Scatterplot.css";
 
 const W = 1200;
@@ -23,8 +21,10 @@ const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 const OFFSET = 8;
 
 const MAX_RADIUS = 16;
-const MAX_DISTANCE = 1.6;
-const HABITABLE_ZONE = [0.725, 1.24];
+const MAX_DISTANCE = 2;
+// const HABITABLE_ZONE = [0.725, 1.24];
+const DIST_EXTENT = [0, 2];
+const TEMP_EXTENT = [0, 10000];
 const PLANET_TYPES = [
   { label: "Mini-Earth", lower_limit: 0, upper_limit: 0.5, range: 0.5 },
   { label: "Earth", lower_limit: 0.5, upper_limit: 1.5, range: 1 },
@@ -68,10 +68,9 @@ const getPlanetType = n => {
 };
 
 const PLANETS = planets.map(d => ({
-  type: d.pl_rade ? getPlanetType(d.pl_rade) : "Radius Unknown",
+  // type: d.pl_rade ? getPlanetType(d.pl_rade) : "Radius Unknown",
   ...d
 }));
-const KEPLER = PLANETS.filter(d => d.pl_kepflag === 1 || d.pl_k2flag === 1);
 
 export class Scatterplot extends React.Component {
   constructor() {
@@ -128,16 +127,20 @@ export class Scatterplot extends React.Component {
     // ]);
     // const radiiExtent = extent(planets, d => d.pl_rade);
     // const planetRadiusScale = this.getLogScale(radiiExtent, [CHART_HEIGHT, 0]);
-    const planetStartDistScale = this.getLinearScale(
+    const planetStarDistScale = this.getLinearScale(
       // extent(KEPLER, d => d.pl_orbsmax),
-      [0, MAX_DISTANCE],
+      DIST_EXTENT,
       [0, CHART_WIDTH]
     );
 
-    const planetRadiusScale = this.getLinearScale([0, 15], [CHART_HEIGHT, 0]);
+    const starTemperatureExtent = extent(PLANETS, d => d.S_Teff);
+    const starTemperatureScale = this.getLinearScale(TEMP_EXTENT, [
+      CHART_HEIGHT,
+      0
+    ]);
 
-    this.createAxisX(planetStartDistScale);
-    this.createAxisY(planetRadiusScale);
+    this.createAxisX(planetStarDistScale);
+    this.createAxisY(starTemperatureScale);
   }
 
   render() {
@@ -181,17 +184,20 @@ export class Scatterplot extends React.Component {
     // const radiiExtent = extent(planets, d => d.pl_rade);
     // const radiusScale = this.getRadiusScale(radiiExtent, [2, 15]);
     // console.log("raddii domain", radiiExtent);
-    const planetRadiusScale = this.getLinearScale([0, 15], [CHART_HEIGHT, 0]);
-
-    const planetStartDistScale = this.getLinearScale(
-      // extent(KEPLER, d => d.pl_orbsmax),
-      [0, MAX_DISTANCE],
-      [0, CHART_WIDTH]
+    const planetRadiusScale = this.getLinearScale(
+      extent(PLANETS, d => d.P_radius),
+      [0, 40]
     );
 
-    const stellarTemperatureScale = this.getLinearScale(
-      [2000, 7000],
-      [CHART_HEIGHT, 0]
+    const starTemperatureExtent = extent(PLANETS, d => d.S_Teff);
+    const starTemperatureScale = this.getLinearScale(TEMP_EXTENT, [
+      CHART_HEIGHT,
+      0
+    ]);
+    const planetStarDistScale = this.getLinearScale(
+      // extent(KEPLER, d => d.pl_orbsmax),
+      DIST_EXTENT,
+      [0, CHART_WIDTH]
     );
 
     // const points = planets
@@ -239,10 +245,10 @@ export class Scatterplot extends React.Component {
           {PLANET_TYPES.map(d => {
             return (
               <React.Fragment>
-                <rect
+                {/* <rect
                   className="scatterplot-planet-type-rectangle"
-                  x={planetStartDistScale(0)}
-                  width={planetStartDistScale(MAX_DISTANCE)}
+                  x={planetStarDistScale(0)}
+                  width={planetStarDistScale(MAX_DISTANCE)}
                   y={planetRadiusScale(d.upper_limit)}
                   height={
                     planetRadiusScale(d.lower_limit) -
@@ -252,7 +258,7 @@ export class Scatterplot extends React.Component {
                 />
                 <text
                   className="scatterplot-planet-type-label"
-                  x={planetStartDistScale(MAX_DISTANCE) - OFFSET}
+                  x={planetStarDistScale(MAX_DISTANCE) - OFFSET}
                   y={planetRadiusScale(d.upper_limit)}
                   dy={
                     (planetRadiusScale(d.lower_limit) -
@@ -262,7 +268,7 @@ export class Scatterplot extends React.Component {
                   fill={planetTypeColors(d.label)}
                 >
                   {d.label}
-                </text>
+                </text> */}
               </React.Fragment>
             );
           })}
@@ -273,10 +279,10 @@ export class Scatterplot extends React.Component {
         >
           <rect
             className="scatterplot-habitable-zone-rectangle"
-            x={planetStartDistScale(HABITABLE_ZONE[0])}
+            x={planetStarDistScale(HABITABLE_ZONE[0])}
             width={
-              planetStartDistScale(HABITABLE_ZONE[1]) -
-              planetStartDistScale(HABITABLE_ZONE[0])
+              planetStarDistScale(HABITABLE_ZONE[1]) -
+              planetStarDistScale(HABITABLE_ZONE[0])
             }
             y={planetRadiusScale(MAX_RADIUS)}
             height={CHART_HEIGHT}
@@ -284,9 +290,9 @@ export class Scatterplot extends React.Component {
           <text
             className="scatterplot-habitable-zone-label"
             x={
-              planetStartDistScale(HABITABLE_ZONE[0]) +
-              (planetStartDistScale(HABITABLE_ZONE[1]) -
-                planetStartDistScale(HABITABLE_ZONE[0])) /
+              planetStarDistScale(HABITABLE_ZONE[0]) +
+              (planetStarDistScale(HABITABLE_ZONE[1]) -
+                planetStarDistScale(HABITABLE_ZONE[0])) /
                 2
             }
             y={planetRadiusScale(MAX_RADIUS) + OFFSET}
@@ -295,54 +301,76 @@ export class Scatterplot extends React.Component {
           </text>
         </g> */}
         <g transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}>
-          {PLANETS.filter(
-            d => d.pl_rade < MAX_RADIUS || d.pl_orbsmax < MAX_DISTANCE
-          ).map(
-            (d, i) =>
-              d.pl_orbsmax &&
-              d.st_teff &&
-              d.pl_rade && (
-                <React.Fragment>
-                  <circle
-                    key={`scatterplot-dot-${i}`}
-                    cx={planetStartDistScale(d.pl_orbsmax)}
-                    cy={planetRadiusScale(d.pl_rade)}
-                    r={2}
-                    // fill={"crimson"}
-                    // stroke={"crimson"}
-                    // r={radiusScale(d.pl_rade)}
-                    fill={planetTypeColors(d.type)}
-                    // stroke={planetTypeColors(d.type)}
-                    className="scatterplot-dot"
-                    onMouseEnter={() =>
-                      console.log(
-                        `radus: ${d.pl_rade}, orbital period: ${
-                          d.pl_orbper
-                        }, discovery method: ${d.pl_discmethod},
+          <g className="scatterplot-circle-group">
+            {PLANETS.filter(d => d.P_distance < 2).map((d, i) => (
+              <React.Fragment>
+                {d.P_radius &&
+                  d.P_distance &&
+                  d.S_Teff && (
+                    <circle
+                      key={`scatterplot-dot-${i}`}
+                      cx={planetStarDistScale(d.P_distance)}
+                      cy={starTemperatureScale(d.S_Teff)}
+                      r={planetRadiusScale(d.P_radius)}
+                      fill={d.P_habitable === 1 ? "crimson" : "#DDDDDD"}
+                      fillOpacity={d.P_habitable === 1 ? 1 : 0.1}
+                      stroke={d.P_habitable === 1 ? "crimson" : "#DDDDDD"}
+                      strokeOpacity={d.P_habitable === 1 ? 1 : 0.4}
+                      className="scatterplot-dot"
+                      onMouseEnter={() =>
+                        console.log(
+                          `radus: ${d.pl_rade}, orbital period: ${
+                            d.pl_orbper
+                          }, discovery method: ${d.pl_discmethod},
                   planet NAME: ${d.pl_name}`
-                      )
-                    }
-                  />
+                        )
+                      }
+                    />
+                  )}
+              </React.Fragment>
+            ))}
+          </g>
+          {/* <g className="scatterplot-label-group">
+            {PLANETS.filter(d => d.P_distance < 2).map((d, i) => (
+              <React.Fragment>
+                {d.P_habitable === 1 && (
                   <text
-                    x={planetStartDistScale(d.pl_orbsmax)}
-                    y={planetRadiusScale(d.pl_rade)}
+                    x={planetStarDistScale(d.P_distance)}
+                    y={starTemperatureScale(d.S_Teff)}
                     className="scatterplot-dot-label"
                   >
-                    {d.pl_name}
+                    {d.P_name}
                   </text>
-                </React.Fragment>
-              )
-          )}
-          <circle
+                )}
+              </React.Fragment>
+            ))}
+          </g> */}
+          <g className="scatterplot-CHZ-group">
+            {PLANETS.filter(d => d.P_distance < 2).map((d, i) => (
+              <React.Fragment>
+                {d.P_habitable === 1 && (
+                  <line
+                    x1={planetStarDistScale(d.P_inner)}
+                    y1={starTemperatureScale(d.S_Teff)}
+                    x2={planetStarDistScale(d.P_outer)}
+                    y2={starTemperatureScale(d.S_Teff)}
+                    stroke={d.P_habitable === 1 ? "crimson" : "#DDDDDD"}
+                    strokeWidth={0.5}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </g>
+          {/* <circle
             className="scatterplot-dot-earth"
-            cx={planetStartDistScale(1)}
+            cx={planetStarDistScale(1)}
             // cy={stellarTemperatureScale(5778)}
-            cy={planetRadiusScale(1)}
+            cy={starTemperatureScale(sun)}
             r={2}
-          />
+          /> */}
           {/* <circle
             className="scatterplot-dot-earth-overlay"
-            cx={planetStartDistScale(1)}
+            cx={planetStarDistScale(1)}
             cy={stellarTemperatureScale(5778)}
             r={planetRadiusScale(20)}
           /> */}

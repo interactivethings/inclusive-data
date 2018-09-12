@@ -2,10 +2,11 @@
   position: relative;
 }
 
-.histogram-description {
+/* .histogram-description {
   visibility: hidden;
-}
+} */
 .histogram-title {
+  text-align: center;
 }
 /** Hint */
 .histogram-hint-rect {

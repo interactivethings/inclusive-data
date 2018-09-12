@@ -14,23 +14,25 @@ const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 const TARGET_NB_BINS = 100;
 
-const FILTERED_PLANETS = planets.filter(d => d.st_dist < 2000);
+const MAX_DISTANCE = max(planets.filter(d => d.st_dist < 2000), d => d.st_dist);
+const FILTERED_PLANETS = planets.filter(d => d.st_dist < MAX_DISTANCE);
 
-const MAX_DISTANCE = max(FILTERED_PLANETS, d => d.st_dist);
 const DISTANCE_SCALE = scaleLinear()
   .domain([0, MAX_DISTANCE])
-  .range([0, CHART_WIDTH])
-  .nice();
+  .range([0, CHART_WIDTH]);
 
 const BINS = histogram()
   .domain(DISTANCE_SCALE.domain())
   .thresholds(DISTANCE_SCALE.ticks(TARGET_NB_BINS))
   .value(d => d.st_dist)(FILTERED_PLANETS);
+console.log(BINS.map(bin => bin.x0 + "-" + bin.x1));
 
 const NB_BINS = DISTANCE_SCALE.ticks(TARGET_NB_BINS).length;
+console.log("nb bins", NB_BINS);
 
 const MIN_COUNT = min(BINS, d => d.length);
 const MAX_COUNT = max(BINS, d => d.length);
+
 const COUNT_SCALE = scaleLinear()
   .domain([MIN_COUNT, MAX_COUNT])
   .range([CHART_HEIGHT, 0])
@@ -44,7 +46,11 @@ export class Histogram extends React.Component {
     this.axisY = React.createRef();
     this.data = React.createRef();
     // this.dataGroup = React.createRef();
-    this.state = { focusedBar: 0, withinNavigation: false, displayHint: false };
+    this.state = {
+      focusedBar: -1,
+      withinNavigation: false,
+      displayHint: false
+    };
   }
 
   createAxisX = scale => {

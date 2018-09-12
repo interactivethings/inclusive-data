@@ -7,7 +7,7 @@ import planets from "../data/tidy/planets.json";
 import "./Histogram.css";
 import Tone from "tone";
 
-// //create a synth and connect it to the master output (your speakers)
+// create a synth and connect it to the master output (speakers)
 const synth = new Tone.Synth().toMaster();
 
 /** Constants */
@@ -16,7 +16,7 @@ const H = 600;
 const MARGIN = { TOP: 50, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-const TARGET_NB_BINS = 125;
+const TARGET_NB_BINS = 100;
 
 const FILTERED_PLANETS = planets.filter(d => d.st_dist < 2000);
 
@@ -42,7 +42,7 @@ const COUNT_SCALE = scaleLinear()
 
 const TONE_SCALE = scaleLinear()
   .domain([0, MAX_COUNT])
-  .range([0, 84]); // A1 to A8
+  .range([16, 76]); // A3 to A7
 
 /** Component */
 export class Histogram extends React.Component {
@@ -101,6 +101,7 @@ export class Histogram extends React.Component {
         },
         this.focusRectangle,
         this.playSound(BINS[this.state.focusedBar].length)
+        // FIXME: last and first bar sound os wrong when coming from data group.
       );
     }
   };
@@ -142,7 +143,12 @@ export class Histogram extends React.Component {
 
   playSound = count => {
     const note = Tone.Frequency("A1").transpose(TONE_SCALE(count));
-    synth.triggerAttackRelease(note, "8n");
+    synth.triggerAttackRelease(note, "16n");
+  };
+
+  stopPropagation = e => {
+    e.stopPropagation();
+    e.preventDefault();
   };
 
   handleBarClick = (index, count) => {
@@ -165,29 +171,26 @@ export class Histogram extends React.Component {
   render() {
     return (
       <div className="histogram-container">
-        <h4 id="histogram-description">
-          Distribution of confirmed exoplanets by their distance to the Sun.
-        </h4>
         <svg
           className="histogram-svg"
           width={W}
           height={H}
-          tabIndex={0}
-          aria-labelledby="#histogram-description"
+          role="application"
+          tabIndex={-1}
+          aria-labelledby="histogram-description"
         >
           <g
             className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT +
               MARGIN.TOP})`}
             ref={this.axisX}
-            tabIndex={0}
             aria-label={`horizontal axis of a linear scale from 0 to ${MAX_DISTANCE} parsecs`}
           />
           <g
             className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisY}
-            tabIndex={0}
+            // tabIndex={0}
             aria-label={`vertical axis of a linear scale from 0 to ${MAX_COUNT} planets`}
             // aria-labelledby="#histogram-y-axis-label"
           />
@@ -229,9 +232,9 @@ export class Histogram extends React.Component {
                   tabIndex={-1}
                   className="histogram-bar"
                   id={`histogram-bar-${i}`}
-                  aria-label={`bin from distance ${bin.x0} and ${
+                  aria-label={`${bin.length} planets between ${bin.x0} and ${
                     bin.x1
-                  } parsecs, contains ${bin.length} planets`}
+                  } parsecs`}
                   key={i}
                   data-n={`bin-${bin.x0}:${bin.x1}`}
                   x={DISTANCE_SCALE(bin.x0)}
@@ -264,10 +267,14 @@ export class Histogram extends React.Component {
             </text>
           </g>
         </svg>
+        <h3 id="histogram-title">
+          Distribution of confirmed exoplanets by their distance to the Sun.
+        </h3>
         {BINS.map((bin, i) => {
           return (
             <div
               className="histogram-tooltip"
+              id={`histogram-tooltip-${i}`}
               style={{
                 transform: `translate(${MARGIN.LEFT +
                   DISTANCE_SCALE(bin.x0)}px, ${MARGIN.TOP +

@@ -350,6 +350,7 @@ export class Scatterplot extends React.Component {
               <React.Fragment>
                 {d.P_habitable === 1 && (
                   <line
+                    key={`scatterplot-chz-${i}`}
                     x1={planetStarDistScale(d.P_inner)}
                     y1={starTemperatureScale(d.S_Teff)}
                     x2={planetStarDistScale(d.P_outer)}

@@ -2,7 +2,8 @@ import * as React from "react";
 import "./App.css";
 import { Streamgraph } from "./components/Streamgraph";
 import { Scatterplot } from "./components/Scatterplot.phl";
-import { Histogram } from "./components/Histogram";
+import { Histogram } from "./components/Histogram.aria";
+import { Histogram as HistogramSound } from "./components/Histogram.sound";
 
 export class App extends React.Component {
   render() {
@@ -10,7 +11,7 @@ export class App extends React.Component {
       <div className="wrapper">
         <h1>How Does This Data Sound?</h1>
         <p>About Inclusive Data Visualization</p>
-        <h2>Since when have astronomers been discovering planets?</h2>
+        {/* <h2>Since when have astronomers been discovering planets?</h2>
         <p>
           An exoplanet or extrasolar planet is a planet outside our solar
           system. The first evidence of an exoplanet was noted as early as 1917,
@@ -25,9 +26,9 @@ export class App extends React.Component {
           indirect techniques of detection, mainly by radial velocity
           measurements and transit monitoring techniques.
         </p>
-        <Streamgraph />
-        <h2>How far away have astronomers seen exoplanets?</h2>
-        <p>
+        <Streamgraph /> */}
+        {/* <h2>How far away have astronomers seen exoplanets?</h2> */}
+        {/* <p>
           The parsec (symbol: pc) is a unit of length used to measure large
           distances to astronomical objects outside the Solar System. A parsec
           is defined as the distance at which one astronomical unit subtends an
@@ -42,9 +43,10 @@ export class App extends React.Component {
           Each bar emits a sound when focused, using an equal-temperament
           chromatic scale from A1 to A8, ie with 84 semitone intervals used as
           the range for the bin count domain [0, 472]
-        </p>
+        </p> */}
         <Histogram />
-        <h2>CHZ</h2>
+        <HistogramSound />
+        {/* <h2>CHZ</h2> */}
         <Scatterplot />
       </div>
     );

@@ -64,6 +64,7 @@ export class Histogram extends React.Component {
   };
 
   moveFocusToNextDataPoint = e => {
+    e.preventDefault(); // This prevent VoiceOver from moving focus to next text element
     if (e.key === "ArrowRight") {
       this.setState(
         {

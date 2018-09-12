@@ -142,6 +142,7 @@ export class Histogram extends React.Component {
   };
 
   playSound = count => {
+    // FIXME: if value =0, play a completely different sound.
     const note = Tone.Frequency("A1").transpose(TONE_SCALE(count));
     synth.triggerAttackRelease(note, "16n");
   };

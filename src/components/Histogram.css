@@ -23,9 +23,8 @@
 }
 
 /** AXIS */
-.histogram-y-axis-label {
+.histogram-x-axis-label {
   text-anchor: end;
-  dominant-baseline: text-after-edge;
   font-size: 12px;
 }
 .histogram-axis .domain,

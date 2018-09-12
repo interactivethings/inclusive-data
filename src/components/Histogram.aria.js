@@ -80,7 +80,7 @@ export class Histogram extends React.Component {
       this.setState(
         {
           focusedBar:
-            this.state.focusedBar === 0
+            this.state.focusedBar === 0 || this.state.focusedBar === -1
               ? NB_BINS - 1
               : this.state.focusedBar - 1,
           withinNavigation: true
@@ -93,7 +93,8 @@ export class Histogram extends React.Component {
   displayHint = index => {
     this.setState({ displayHint: true, focusedBar: index });
   };
-  hideHint = index => {
+
+  hideHint = () => {
     this.setState({ displayHint: false });
   };
 
@@ -145,10 +146,10 @@ export class Histogram extends React.Component {
             tabIndex={-1}
           />
           <text
-            className="histogram-y-axis-label"
-            id="histogram-y-axis-label"
+            className="histogram-x-axis-label"
+            id="histogram-x-axis-label"
             x={W}
-            y={H}
+            y={H - 6}
             tabIndex={-1}
           >
             → distance (parsecs)
@@ -211,7 +212,7 @@ export class Histogram extends React.Component {
               }}
             >
               <div className="histogram-tooltip-item">
-                {bin.length} planets within <br />
+                {bin.length} planets between <br />
                 {bin.x0}-{bin.x1} parsecs
               </div>
             </div>

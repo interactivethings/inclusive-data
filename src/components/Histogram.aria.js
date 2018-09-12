@@ -43,7 +43,7 @@ export class Histogram extends React.Component {
     this.axisX = React.createRef();
     this.axisY = React.createRef();
     this.data = React.createRef();
-    this.dataGroup = React.createRef();
+    // this.dataGroup = React.createRef();
     this.state = { focusedBar: 0, withinNavigation: false, displayHint: false };
   }
 
@@ -58,19 +58,29 @@ export class Histogram extends React.Component {
   };
 
   moveFocusToNextDataPoint = e => {
-    if (e.keyCode === 39) {
-      this.setState({
-        focusedBar:
-          this.state.focusedBar === NB_BINS - 1 ? 0 : this.state.focusedBar + 1,
-        withinNavigation: true
-      });
+    if (e.key === "ArrowRight") {
+      this.setState(
+        {
+          focusedBar:
+            this.state.focusedBar === NB_BINS - 1
+              ? 0
+              : this.state.focusedBar + 1,
+          withinNavigation: true
+        },
+        this.focusRectangle
+      );
     } else {
-      // if (e.keyCode === 37)
-      this.setState({
-        focusedBar:
-          this.state.focusedBar === 0 ? NB_BINS - 1 : this.state.focusedBar - 1,
-        withinNavigation: true
-      });
+      // if (e.key === "ArrowLeft")
+      this.setState(
+        {
+          focusedBar:
+            this.state.focusedBar === 0
+              ? NB_BINS - 1
+              : this.state.focusedBar - 1,
+          withinNavigation: true
+        },
+        this.focusRectangle
+      );
     }
   };
 
@@ -86,6 +96,10 @@ export class Histogram extends React.Component {
     this.createAxisY(COUNT_SCALE);
   }
 
+  focusRectangle = () => {
+    this.data.current.focus();
+    // You need to move focus for VoiceOver to actually read the new element, updating "aria-activedesendant" is not enough
+  };
   render() {
     return (
       <div className="histogram-container">
@@ -106,7 +120,7 @@ export class Histogram extends React.Component {
           }
           aria-live="assertive"
           onKeyDown={e =>
-            e.keyCode === 39 || e.keyCode === 37
+            e.key === "ArrowLeft" || e.key === "ArrowRight"
               ? this.moveFocusToNextDataPoint(e)
               : null
           }
@@ -116,17 +130,20 @@ export class Histogram extends React.Component {
             transform={`translate(${MARGIN.LEFT}, ${CHART_HEIGHT +
               MARGIN.TOP})`}
             ref={this.axisX}
+            tabIndex={-1}
           />
           <g
             className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisY}
+            tabIndex={-1}
           />
           <text
             className="histogram-y-axis-label"
             id="histogram-y-axis-label"
             x={W}
             y={H}
+            tabIndex={-1}
           >
             → distance (parsecs)
           </text>
@@ -139,15 +156,22 @@ export class Histogram extends React.Component {
               return (
                 <rect
                   id={`histogram-bar-${i}`}
+                  className="histogram-bar"
+                  key={i}
+                  ref={i === this.state.focusedBar && this.data} // We need a ref to update focus
+                  tabIndex={-1} // need a tabIndex to receive focus
                   onMouseOver={() => this.displayHint(i)}
                   onFocus={() => this.displayHint(i)}
                   onMouseOut={() => this.hideHint()}
                   onBlur={() => this.hideHint()}
-                  className="histogram-bar"
+                  onKeyDown={e =>
+                    e.key === "ArrowLeft" || e.key === "ArrowRight"
+                      ? this.moveFocusToNextDataPoint(e)
+                      : null
+                  }
                   aria-label={`${bin.length} planets between ${bin.x0} and ${
                     bin.x1
                   } parsecs`}
-                  key={i}
                   x={DISTANCE_SCALE(bin.x0)}
                   y={COUNT_SCALE(bin.length)}
                   width={CHART_WIDTH / NB_BINS - 2}
@@ -161,9 +185,8 @@ export class Histogram extends React.Component {
           Distribution of confirmed exoplanets by their distance to the Sun.
         </h3>
         <div id="histogram-description" className="histogram-description">
-          Description:
-          {`horizontal axis of a linear scale from 0 to ${MAX_DISTANCE} parsecs - `}
-          {`vertical axis of a linear scale from 0 to ${MAX_COUNT} planets`}
+          {/* Using visibility: hidden */}
+          {`Histogram where the horizontal axis is a linear scale of distance to the Sun in parsecs from 0 to ${MAX_DISTANCE} and where the vertical axis is a count of planets in each bin. Use left and right arrows to access single data points, press tab to exit`}
         </div>
         {BINS.map((bin, i) => {
           return (

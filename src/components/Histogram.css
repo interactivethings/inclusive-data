@@ -3,6 +3,7 @@
 }
 
 .histogram-description {
+  visibility: hidden;
 }
 .histogram-title {
 }

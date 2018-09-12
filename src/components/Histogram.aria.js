@@ -189,11 +189,14 @@ export class Histogram extends React.Component {
             })}
           </g>
         </svg>
-        <h3 id="histogram-title" className="histogram-title">
-          Distribution of confirmed exoplanets by their distance to the Sun.
-        </h3>
-        <div id="histogram-description" className="histogram-description">
-          {/* Using visibility: hidden */}
+        <figcaption id="histogram-title" className="histogram-title">
+          Distribution of confirmed exoplanets by their distance to the Sun
+        </figcaption>
+        <div
+          id="histogram-description"
+          className="histogram-description"
+          style={{ display: "none" }}
+        >
           {`Histogram where the horizontal axis is a linear scale of distance to the Sun in parsecs from 0 to ${MAX_DISTANCE} and where the vertical axis is a count of planets in each bin. Use left and right arrows to access single data points, press tab to exit`}
         </div>
         {BINS.map((bin, i) => {

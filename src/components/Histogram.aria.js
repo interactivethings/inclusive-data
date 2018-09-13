@@ -162,29 +162,53 @@ export class Histogram extends React.Component {
           >
             {BINS.map((bin, i) => {
               return (
-                <rect
-                  id={`histogram-bar-${i}`}
-                  className="histogram-bar"
-                  key={i}
-                  ref={i === this.state.focusedBar && this.data} // We need a ref to update focus
-                  tabIndex={-1} // need a tabIndex to receive focus
-                  onMouseOver={() => this.displayHint(i)}
-                  onFocus={() => this.displayHint(i)}
-                  onMouseOut={() => this.hideHint()}
-                  onBlur={() => this.hideHint()}
-                  onKeyDown={e =>
-                    e.key === "ArrowLeft" || e.key === "ArrowRight"
-                      ? this.moveFocusToNextDataPoint(e)
-                      : null
-                  }
-                  aria-label={`${bin.length} planets between ${bin.x0} and ${
-                    bin.x1
-                  } parsecs`}
-                  x={DISTANCE_SCALE(bin.x0)}
-                  y={COUNT_SCALE(bin.length)}
-                  width={CHART_WIDTH / NB_BINS - 2}
-                  height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
-                />
+                <React.Fragment>
+                  <rect
+                    id={`histogram-bar-overlay-${i}`}
+                    className="histogram-bar-overlay"
+                    key={`histogram-bar-overlay-${i}`}
+                    onMouseOver={() => this.displayHint(i)}
+                    onFocus={() => this.displayHint(i)}
+                    onMouseOut={() => this.hideHint()}
+                    onBlur={() => this.hideHint()}
+                    onKeyDown={e =>
+                      e.key === "ArrowLeft" || e.key === "ArrowRight"
+                        ? this.moveFocusToNextDataPoint(e)
+                        : null
+                    }
+                    aria-label={`${bin.length} planets between ${bin.x0} and ${
+                      bin.x1
+                    } parsecs`}
+                    x={DISTANCE_SCALE(bin.x0)}
+                    y={0}
+                    width={CHART_WIDTH / NB_BINS}
+                    height={CHART_HEIGHT}
+                  />
+                  <rect
+                    id={`histogram-bar-${i}`}
+                    className="histogram-bar"
+                    key={`histogram-bar-${i}`}
+                    ref={i === this.state.focusedBar && this.data} // We need a ref to update focus
+                    tabIndex={-1} // need a tabIndex to receive focus
+                    onMouseOver={() => this.displayHint(i)}
+                    onFocus={() => this.displayHint(i)}
+                    onMouseOut={() => this.hideHint()}
+                    onBlur={() => this.hideHint()}
+                    onKeyDown={e =>
+                      e.key === "ArrowLeft" || e.key === "ArrowRight"
+                        ? this.moveFocusToNextDataPoint(e)
+                        : null
+                    }
+                    // aria-label={`${bin.length} planets between ${bin.x0} and ${
+                    //   bin.x1
+                    // } parsecs`}
+                    aria-labelledby={`histogram-tooltip-${i}`} // This tells screen readers where to find the tooltip for this data point.
+                    x={DISTANCE_SCALE(bin.x0)}
+                    y={COUNT_SCALE(bin.length)}
+                    width={CHART_WIDTH / NB_BINS - 2}
+                    height={CHART_HEIGHT - COUNT_SCALE(bin.length)}
+                  />
+                </React.Fragment>
               );
             })}
           </g>
@@ -197,12 +221,13 @@ export class Histogram extends React.Component {
           className="histogram-description"
           style={{ display: "none" }}
         >
-          {`Histogram where the horizontal axis is a linear scale of distance to the Sun in parsecs from 0 to ${MAX_DISTANCE} and where the vertical axis is a count of planets in each bin. Use left and right arrows to access single data points, press tab to exit`}
+          {`Histogram of ${NB_PLANETS} planets. The horizontal axis is a linear scale of distance to the Sun from 0 to ${MAX_DISTANCE} parsecs. The vertical axis is a count of planets in each bin. Use left and right arrows to access single data points, press tab to exit`}
         </div>
         {BINS.map((bin, i) => {
           return (
             <div
               className="histogram-tooltip"
+              role="tooltip" // This is to make sure the tooltip is read by aria-labelledby on rect. cf. https://inclusive-components.design/tooltips-toggletips/
               id={`histogram-tooltip-${i}`}
               key={`histogram-tooltip-${i}`}
               style={{
@@ -217,7 +242,7 @@ export class Histogram extends React.Component {
             >
               <div className="histogram-tooltip-item">
                 {bin.length} planets between <br />
-                {bin.x0}-{bin.x1} parsecs
+                {bin.x0} and {bin.x1} parsecs
               </div>
             </div>
           );

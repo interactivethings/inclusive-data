@@ -16,7 +16,7 @@ const TARGET_NB_BINS = 100;
 
 const MAX_DISTANCE = max(planets.filter(d => d.st_dist < 2000), d => d.st_dist);
 const FILTERED_PLANETS = planets.filter(d => d.st_dist < MAX_DISTANCE);
-
+const NB_PLANETS = FILTERED_PLANETS.length;
 const DISTANCE_SCALE = scaleLinear()
   .domain([0, MAX_DISTANCE])
   .range([0, CHART_WIDTH]);
@@ -25,10 +25,8 @@ const BINS = histogram()
   .domain(DISTANCE_SCALE.domain())
   .thresholds(DISTANCE_SCALE.ticks(TARGET_NB_BINS))
   .value(d => d.st_dist)(FILTERED_PLANETS);
-console.log(BINS.map(bin => bin.x0 + "-" + bin.x1));
 
 const NB_BINS = DISTANCE_SCALE.ticks(TARGET_NB_BINS).length;
-console.log("nb bins", NB_BINS);
 
 const MIN_COUNT = min(BINS, d => d.length);
 const MAX_COUNT = max(BINS, d => d.length);
@@ -89,6 +87,7 @@ export class Histogram extends React.Component {
         this.focusRectangle
       );
     }
+    // FIXME: add a key press to access statistics values.
   };
 
   displayHint = index => {

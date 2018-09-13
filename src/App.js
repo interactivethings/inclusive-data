@@ -9,8 +9,8 @@ export class App extends React.Component {
   render() {
     return (
       <div className="wrapper">
-        <h1>How Does This Data Sound?</h1>
-        <p>About Inclusive Data Visualization</p>
+        {/* <h1>How Does This Data Sound?</h1>
+      <p>About Inclusive Data Visualization</p> */}
         {/* <h2>Since when have astronomers been discovering planets?</h2>
         <p>
           An exoplanet or extrasolar planet is a planet outside our solar
@@ -45,9 +45,9 @@ export class App extends React.Component {
           the range for the bin count domain [0, 472]
         </p> */}
         <Histogram />
-        <HistogramSound />
+        {/* <HistogramSound /> */}
         {/* <h2>CHZ</h2> */}
-        <Scatterplot />
+        {/* <Scatterplot /> */}
       </div>
     );
   }

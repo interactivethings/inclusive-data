@@ -3,7 +3,7 @@ import { axisBottom, axisLeft } from "d3-axis";
 import { scaleLinear } from "d3-scale";
 import { select } from "d3-selection";
 import * as React from "react";
-import planets from "../data/tidy/planets.json";
+import planets from "../data/tidy/phl.json";
 import "./Histogram.css";
 import Tone from "tone";
 
@@ -15,37 +15,109 @@ const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 const TARGET_NB_BINS = 100;
 
-const INDICATORS = [
-  { id: "st_dist", unit: "parsecs", label: "Star distance to the Sun" },
-  { id: "pl_orbper", unit: "?", label: "Periodic orbit" },
-  { id: "pl_masse", unit: "Earth mass", label: "Planet masse" },
-  { id: "pl_disc", unit: "year", label: "Discovery year" },
-  { id: "st_teff", unit: "Kelvin", label: "Star effective Temperature" },
-  { id: "st_optmag", unit: "?", label: "Planet optimal magnitude" },
-  {
-    id: "pl_orbsmax",
-    unit: "Astronomical Unit",
-    label: "Planet maximum orbit"
-  },
-  { id: "pl_rade", unit: "Earth radius", label: "Planet radius" }
-];
+// const INDICATORS = [
+//   { id: "st_dist", unit: "parsecs", label: "Star distance to the Sun" },
+//   { id: "pl_orbper", unit: "?", label: "Periodic orbit" },
+//   { id: "pl_masse", unit: "Earth mass", label: "Planet masse" },
+//   { id: "pl_disc", unit: "year", label: "Discovery year" },
+//   { id: "st_teff", unit: "Kelvin", label: "Star effective Temperature" },
+//   { id: "st_optmag", unit: "?", label: "Planet optimal magnitude" },
+//   {
+//     id: "pl_orbsmax",
+//     unit: "Astronomical Unit",
+//     label: "Planet maximum orbit"
+//   },
+//   { id: "pl_rade", unit: "Earth radius", label: "Planet radius" }
+// ];
 
+const INDICATORS = [
+  { id: "pl_radius", unit: "Earth Units", label: "Planet radius" },
+  { id: "pl_mass", unit: "Earth Units", label: "Planet mass" },
+  { id: "pl_density", unit: "Earth Units", label: "Planet density" },
+  { id: "pl_gravity", unit: "Earth Units", label: "Planet gravity" },
+  {
+    id: "pl_escapeVelocity",
+    unit: "Earth Units",
+    label: "Planet escape velocity"
+  },
+  {
+    id: "pl_starFluxMean",
+    unit: "Earth Units",
+    label: "Planet mean stellar flux"
+  },
+  {
+    id: "pl_surfacePressure",
+    unit: "Earth Units",
+    label: "Planet surface pressure."
+  },
+  {
+    id: "pl_distance",
+    unit: "Astronomical Units",
+    label: "Planet mean distance from the star"
+  },
+  {
+    id: "pl_TeqMean",
+    unit: "Kelvins",
+    label: "Planet mean equilibrium temperature"
+  },
+  {
+    id: "pl_TsMean",
+    unit: "Kelvins",
+    label: "Planet mean surface temperature"
+  },
+  {
+    id: "pl_magnitude",
+    unit: "",
+    label: "Planet magnitude as seen from a Moon-Earth distance"
+  },
+  {
+    id: "pl_apparentSize",
+    unit: "",
+    label: "	Planet apparent size as seen from a Moon-Earth distance "
+  },
+  { id: "pl_period", unit: "days", label: "Planet period" },
+  {
+    id: "pl_semiMajorAxis",
+    unit: "Astonomical Units",
+    label: "Planet semi-major axis"
+  },
+  { id: "pl_inclination", unit: "degrees", label: "Planet inclination" },
+  {
+    id: "st_inner",
+    unit: "Astonomical Units",
+    label: "Star inner edge of habitable zone"
+  },
+  {
+    id: "st_outer",
+    unit: "Astonomical Units",
+    label: "Star outer edge of habitable zone"
+  },
+  { id: "st_mass", unit: "Solar Units", label: "Star mass" },
+  { id: "st_radius", unit: "Solar Units", label: "Star radius" },
+  { id: "st_luminosity", unit: "Solar Units", label: "Star luminosity" },
+  { id: "st_distanceToSun", unit: "parsec", label: "Star distance from Earth" },
+  { id: "st_Teff", unit: "Solar Units", label: "Star effective temperature" },
+  { id: "st_age", unit: "Billion years", label: "Star age" }
+];
 // create a synth and connect it to the master output (speakers)
 const SYNTH = new Tone.Synth().toMaster();
-
+const LOWEST_TONE = 16; // A3
+const HIGHEST_TONE = 76; // A7
 // default BPM = 80
 const NOTE_DURATION = "8n"; // an eigth of a note (also available: fraction of a measure "1m" and time values "2s")
+const PLAYBACK_RATE = 15;
 
 export class Histogram extends React.Component {
   constructor() {
     super();
     Tone.Transport.schedule(this.triggerDataMelody, 0);
-    Tone.Transport.loopEnd = "10";
+    Tone.Transport.loopEnd = "5";
     Tone.Transport.loop = true;
 
     this.state = {
-      indicator: "st_dist",
-      isPlaying: false
+      indicator: "st_distanceToSun",
+      isPlaying: false,
+      focusedBar: 30
     };
   }
 
@@ -53,9 +125,25 @@ export class Histogram extends React.Component {
     this.setState({ indicator: e.currentTarget.value });
   };
 
+  updateDataMelody = (bins, maxBin, focus) => {
+    const toneScale = scaleLinear()
+      .domain([0, maxBin])
+      .range([LOWEST_TONE, HIGHEST_TONE]); // A3 to A7
+
+    const dataMelody = bins.map((bin, i) => {
+      return {
+        time: i + 1,
+        note: Tone.Frequency("A1")
+          .transpose(toneScale(bin.length))
+          .toFrequency(),
+        velocity: 0.5
+      };
+    });
+    return dataMelody;
+  };
+
   triggerDataMelody = () => {
     const { indicator } = this.state;
-
     const maxValue = max(planets, d => d[indicator]);
     const minValue = min(planets, d => d[indicator]);
 
@@ -69,32 +157,30 @@ export class Histogram extends React.Component {
       .value(d => d[indicator])(planets);
     const maxBin = max(bins, d => d.length);
 
-    // Sound
-    const toneScale = scaleLinear()
-      .domain([0, maxBin])
-      .range([16, 76]); // A3 to A7
+    // Get Data Melody notes
+    const dataMelody = this.updateDataMelody(
+      bins,
+      maxBin,
+      this.state.focusedBar
+    );
 
-    const dataMelody = bins.map((bin, i) => {
-      const note = Tone.Frequency("A1").transpose(toneScale(bin.length));
-      return {
-        time: i + 1,
-        note: note.toFrequency(),
-        velocity: 0.5
-      };
-    });
+    // Create Data Melody
     let part = new Tone.Part((time, value) => {
       //the value is an object which contains both the note and the velocity
       SYNTH.triggerAttackRelease(value.note, 0.1, time, value.velocity);
+      console.log(time);
     }, dataMelody);
 
-    part.playbackRate = 15;
+    part.playbackRate = PLAYBACK_RATE;
+
+    // Start Data melody
     part.start(0);
   };
 
   playDataPattern = () => {
     if (!this.state.isPlaying) {
       this.setState({ isPlaying: true });
-      Tone.Transport.start("+0.0");
+      Tone.Transport.start("+0.05"); // a very little delay
       // Move focus to currently played bar
     } else {
       this.setState({ isPlaying: false });
@@ -104,8 +190,6 @@ export class Histogram extends React.Component {
 
   render() {
     const { indicator } = this.state;
-    // const MAX_DISTANCE = max(planets.filter(d => d.st_dist < 2000), d => d.st_dist);
-    // const filteredPlanets = planets.filter(d => d.st_dist < MAX_DISTANCE);
 
     // Data
     const planetsNb = planets.length;

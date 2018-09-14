@@ -161,7 +161,7 @@ export class Histogram extends React.Component {
           >
             {BINS.map((bin, i) => {
               return (
-                <React.Fragment>
+                <React.Fragment key={i}>
                   <rect
                     id={`histogram-bar-overlay-${i}`}
                     className="histogram-bar-overlay"

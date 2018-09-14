@@ -44,8 +44,8 @@ export class App extends React.Component {
           chromatic scale from A1 to A8, ie with 84 semitone intervals used as
           the range for the bin count domain [0, 472]
         </p> */}
-        <Histogram />
-        {/* <HistogramSound /> */}
+        {/* <Histogram /> */}
+        <HistogramSound />
         {/* <h2>CHZ</h2> */}
         {/* <Scatterplot /> */}
       </div>

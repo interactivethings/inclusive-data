@@ -18,8 +18,8 @@
   pointer-events: none;
 }
 /** SVG */
-.histogram-svg:focus {
-  background-color: #ededed;
+.histogram-svg:focus rect {
+  fill: black;
   outline: 0;
 }
 
@@ -74,8 +74,8 @@ rect.histogram-bar-overlay {
   overflow: visible;
   pointer-events: none;
   position: absolute;
-  background: black;
-  color: white;
+  background: white;
+  color: black;
   top: 0;
   left: 0;
   font-size: 1em;
@@ -85,6 +85,7 @@ rect.histogram-bar-overlay {
   justify-content: flex-start;
   align-items: center;
   margin-top: -4em;
+  border: 1px solid black;
 }
 .histogram-tooltip-item {
   margin: 0.5em;

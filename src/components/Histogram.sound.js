@@ -15,89 +15,145 @@ const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 const TARGET_NB_BINS = 100;
 
-// const INDICATORS = [
-//   { id: "st_dist", unit: "parsecs", label: "Star distance to the Sun" },
-//   { id: "pl_orbper", unit: "?", label: "Periodic orbit" },
-//   { id: "pl_masse", unit: "Earth mass", label: "Planet masse" },
-//   { id: "pl_disc", unit: "year", label: "Discovery year" },
-//   { id: "st_teff", unit: "Kelvin", label: "Star effective Temperature" },
-//   { id: "st_optmag", unit: "?", label: "Planet optimal magnitude" },
-//   {
-//     id: "pl_orbsmax",
-//     unit: "Astronomical Unit",
-//     label: "Planet maximum orbit"
-//   },
-//   { id: "pl_rade", unit: "Earth radius", label: "Planet radius" }
-// ];
-
 const INDICATORS = [
-  { id: "pl_radius", unit: "Earth Units", label: "Planet radius" },
-  { id: "pl_mass", unit: "Earth Units", label: "Planet mass" },
-  { id: "pl_density", unit: "Earth Units", label: "Planet density" },
-  { id: "pl_gravity", unit: "Earth Units", label: "Planet gravity" },
+  {
+    id: "pl_radius",
+    unit: "Earth Units",
+    label: "Planet radius",
+    celestialBody: "planet"
+  },
+  {
+    id: "pl_mass",
+    unit: "Earth Units",
+    label: "Planet mass",
+    celestialBody: "planet"
+  },
+  {
+    id: "pl_density",
+    unit: "Earth Units",
+    label: "Planet density",
+    celestialBody: "planet"
+  },
+  {
+    id: "pl_gravity",
+    unit: "Earth Units",
+    label: "Planet gravity",
+    celestialBody: "planet"
+  },
   {
     id: "pl_escapeVelocity",
     unit: "Earth Units",
-    label: "Planet escape velocity"
+    label: "Planet escape velocity",
+    celestialBody: "planet"
   },
   {
     id: "pl_starFluxMean",
     unit: "Earth Units",
-    label: "Planet mean stellar flux"
+    label: "Planet mean stellar flux",
+    celestialBody: "planet"
   },
   {
     id: "pl_surfacePressure",
     unit: "Earth Units",
-    label: "Planet surface pressure."
+    label: "Planet surface pressure.",
+    celestialBody: "planet"
   },
   {
     id: "pl_distance",
     unit: "Astronomical Units",
-    label: "Planet mean distance from the star"
+    label: "Planet mean distance from the star",
+    celestialBody: "planet"
   },
   {
     id: "pl_TeqMean",
     unit: "Kelvins",
-    label: "Planet mean equilibrium temperature"
+    label: "Planet mean equilibrium temperature",
+    celestialBody: "planet"
   },
   {
     id: "pl_TsMean",
     unit: "Kelvins",
-    label: "Planet mean surface temperature"
+    label: "Planet mean surface temperature",
+    celestialBody: "planet"
   },
   {
     id: "pl_magnitude",
     unit: "",
-    label: "Planet magnitude as seen from a Moon-Earth distance"
+    label: "Planet magnitude as seen from a Moon-Earth distance",
+    celestialBody: "planet"
   },
   {
     id: "pl_apparentSize",
     unit: "",
-    label: "	Planet apparent size as seen from a Moon-Earth distance "
+    label: "	Planet apparent size as seen from a Moon-Earth distance ",
+    celestialBody: "planet"
   },
-  { id: "pl_period", unit: "days", label: "Planet period" },
+  {
+    id: "pl_period",
+    unit: "days",
+    label: "Planet period",
+    celestialBody: "planet"
+  },
   {
     id: "pl_semiMajorAxis",
     unit: "Astonomical Units",
-    label: "Planet semi-major axis"
+    label: "Planet semi-major axis",
+    celestialBody: "planet"
   },
-  { id: "pl_inclination", unit: "degrees", label: "Planet inclination" },
+  {
+    id: "pl_inclination",
+    unit: "degrees",
+    label: "Planet inclination",
+    celestialBody: "planet"
+  },
   {
     id: "st_inner",
     unit: "Astonomical Units",
-    label: "Star inner edge of habitable zone"
+    label: "Star inner edge of habitable zone",
+    celestialBody: "star"
   },
   {
     id: "st_outer",
     unit: "Astonomical Units",
-    label: "Star outer edge of habitable zone"
+    label: "Star outer edge of habitable zone",
+    celestialBody: "star"
   },
-  { id: "st_mass", unit: "Solar Units", label: "Star mass" },
-  { id: "st_radius", unit: "Solar Units", label: "Star radius" },
-  { id: "st_luminosity", unit: "Solar Units", label: "Star luminosity" },
-  { id: "st_distanceToSun", unit: "parsec", label: "Star distance from Earth" },
-  { id: "st_Teff", unit: "Solar Units", label: "Star effective temperature" },
-  { id: "st_age", unit: "Billion years", label: "Star age" }
+  {
+    id: "st_mass",
+    unit: "Solar Units",
+    label: "Star mass",
+    celestialBody: "star"
+  },
+  {
+    id: "st_radius",
+    unit: "Solar Units",
+    label: "Star radius",
+    celestialBody: "star"
+  },
+  {
+    id: "st_luminosity",
+    unit: "Solar Units",
+    label: "Star luminosity",
+    celestialBody: "star"
+  },
+  {
+    id: "st_distanceToSun",
+    unit: "parsec",
+    label: "Star distance from Earth",
+    celestialBody: "star"
+  },
+  {
+    id: "st_Teff",
+    unit: "Solar Units",
+    label: "Star effective temperature",
+    celestialBody: "star"
+  },
+  {
+    id: "st_age",
+    unit: "Billion years",
+    label: "Star age",
+    celestialBody: "star"
+  }
 ];
 // create a synth and connect it to the master output (speakers)
 const SYNTH = new Tone.Synth().toMaster();
@@ -188,6 +244,12 @@ export class Histogram extends React.Component {
     }
   };
 
+  playSound = () => {};
+
+  handleDataPointClick = () => {
+    this.playSound();
+  };
+
   render() {
     const { indicator } = this.state;
 
@@ -213,21 +275,6 @@ export class Histogram extends React.Component {
 
     const binsNb = indicatorScale.ticks(TARGET_NB_BINS).length;
 
-    // Sound
-    const toneScale = scaleLinear()
-      .domain([0, maxBin])
-      .range([16, 76]); // A3 to A7
-
-    const dataMelody = bins.map((bin, i) => {
-      const note = Tone.Frequency("A1").transpose(toneScale(bin.length));
-      return {
-        time: i + 1,
-        note: note.toFrequency(),
-        velocity: 0.5
-      };
-    });
-
-    console.log(dataMelody);
     return (
       <div>
         <Chart
@@ -240,13 +287,12 @@ export class Histogram extends React.Component {
           data={planets}
           indicator={indicator}
           indicators={INDICATORS}
+          onDataPointClick={this.handleDataPointClick}
         />
         <Controls
           selected={indicator}
           indicators={INDICATORS}
           onIndicatorChange={this.updateIndicator}
-          toneScale={toneScale}
-          // dataMelody={dataMelody}
           isPlaying={this.state.isPlaying}
           onDataMelodyPlay={this.playDataPattern}
         />
@@ -368,7 +414,7 @@ class Chart extends React.Component {
 
   // playSound = count => {
   //   // FIXME: if value =0, play a completely different sound.
-  //   const note = Tone.Frequency("A1").transpose(TONE_SCALE(count));
+  //   const note = Tone.Frequency("A1").transpose(toneScale(count));
   //   SYNTH.triggerAttackRelease(note, "16n");
   // };
 
@@ -543,7 +589,8 @@ class Chart extends React.Component {
               }}
             >
               <div className="histogram-tooltip-item">
-                {bin.length} planets between <br />
+                {bin.length} {indicatorInfos.celestialBody}
+                {bin.length > 1 ? "s" : ""} between <br />
                 {bin.x0} and {bin.x1} {indicatorInfos.unit}
               </div>
             </div>

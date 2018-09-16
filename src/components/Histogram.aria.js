@@ -125,7 +125,7 @@ export class Histogram extends React.Component {
               ? `histogram-bar-${this.state.focusedBar}`
               : null
           }
-          aria-live="assertive"
+          // aria-live="polite"
           onKeyDown={e =>
             e.key === "ArrowLeft" || e.key === "ArrowRight"
               ? this.moveFocusToNextDataPoint(e)

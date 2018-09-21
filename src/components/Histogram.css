@@ -39,6 +39,10 @@
   background-size: 10px 10px, 10px 10px, 1px 1.5em;
   background-repeat: no-repeat;
 }
+.histogram-controls__select:hover {
+  background-color: #ffffff;
+  cursor: pointer;
+}
 .histogram-controls__play-button {
   display: inline-block;
   border: 1px solid #00263e;
@@ -53,6 +57,9 @@
   transition: "background-color" 0.2s;
   -webkit-appearance: none;
   -moz-appearance: none;
+}
+.histogram-controls__play-button:hover {
+  background-color: #ffffff;
 }
 /** Hint */
 .histogram-hint-rect {

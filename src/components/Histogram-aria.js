@@ -7,12 +7,12 @@ import planets from "../data/tidy/planets.json";
 import "./Histogram.css";
 
 /** Constants */
-const W = 1200;
+const W = 800;
 const H = 600;
-const MARGIN = { TOP: 10, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
+const MARGIN = { TOP: 100, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
-const TARGET_NB_BINS = 100;
+const TARGET_NB_BINS = 50;
 
 const MAX_DISTANCE = max(planets.filter(d => d.st_dist < 2000), d => d.st_dist);
 const FILTERED_PLANETS = planets.filter(d => d.st_dist < MAX_DISTANCE);
@@ -201,6 +201,7 @@ export class Histogram extends React.Component {
                     // aria-label={`${bin.length} planets between ${bin.x0} and ${
                     //   bin.x1
                     // } parsecs`}
+
                     aria-labelledby={`histogram-tooltip-${i}`} // This tells screen readers where to find the tooltip for this data point.
                     x={DISTANCE_SCALE(bin.x0)}
                     y={COUNT_SCALE(bin.length)}

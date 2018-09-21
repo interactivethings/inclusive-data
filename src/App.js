@@ -2,8 +2,8 @@ import * as React from "react";
 import "./App.css";
 import { Streamgraph } from "./components/Streamgraph";
 import { Scatterplot } from "./components/Scatterplot.phl";
-import { Histogram } from "./components/Histogram.aria";
-import { Histogram as HistogramSound } from "./components/Histogram.sound";
+import { Histogram } from "./components/Histogram-aria";
+import { Histogram as HistogramSound } from "./components/Histogram-sonified";
 import { Piano } from "./components/piano";
 export class App extends React.Component {
   render() {

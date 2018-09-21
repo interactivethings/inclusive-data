@@ -1,20 +1,16 @@
 .histogram-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  position: relative;
+  font-family: sans-serif;
 }
 
 .histogram-chart {
-  width: 800px;
   position: relative;
+  width: 800px;
 }
 .histogram-controls {
   width: 200px;
 }
 
-/* .histogram-description {
-  visibility: hidden;
-} */
 .histogram-title {
   text-align: center;
 }
@@ -29,7 +25,7 @@
 }
 /** SVG */
 .histogram-svg:focus rect {
-  fill: black;
+  fill: #00263e;
   outline: 0;
 }
 
@@ -62,20 +58,20 @@
 
 /** DATA */
 .histogram-data:focus {
-  /* outline: 0; */
+  outline: 0;
 }
 .histogram-data:focus rect {
-  fill: black;
+  fill: #00263e;
 }
 rect.histogram-bar {
   fill: #ff5555;
 }
 rect.histogram-bar:focus {
-  /* outline: none; */
-  fill: black;
+  outline: none;
+  fill: #00263e;
 }
 rect.histogram-bar:hover {
-  fill: black;
+  fill: #00263e;
 }
 rect.histogram-bar-overlay {
   opacity: 0;
@@ -86,7 +82,7 @@ rect.histogram-bar-overlay {
   pointer-events: none;
   position: absolute;
   background: white;
-  color: black;
+  color: #00263e;
   top: 0;
   left: 0;
   font-size: 1em;
@@ -96,7 +92,7 @@ rect.histogram-bar-overlay {
   justify-content: flex-start;
   align-items: center;
   margin-top: -4em;
-  border: 1px solid black;
+  border: 1px solid #00263e;
 }
 .histogram-tooltip-item {
   margin: 0.5em;

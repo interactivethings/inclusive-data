@@ -9,7 +9,7 @@ import planets from "../data/tidy/phl.json";
 import "./Histogram.css";
 
 /** Constants */
-const W = 1200;
+const W = 800;
 const H = 600;
 const MARGIN = { TOP: 10, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
@@ -135,7 +135,9 @@ export class Histogram extends React.Component {
     // this.playSound();
     this.setState({ showTooltip: true, focusedBar: i });
   };
-
+  handleBlur = () => {
+    this.setState({ showTooltip: false });
+  };
   moveFocusToNextDataPoint = e => {
     const { indicator } = this.state;
 
@@ -149,16 +151,12 @@ export class Histogram extends React.Component {
       .domain(indicatorScale.domain())
       .thresholds(indicatorScale.ticks(TARGET_NB_BINS))
       .value(d => d[indicator])(planets);
-    const minBin = min(bins, d => d.length);
     const maxBin = max(bins, d => d.length);
-    const binScale = scaleLinear()
-      .domain([minBin, maxBin])
-      .range([CHART_HEIGHT, 0])
-      .nice();
 
     const binsNb = indicatorScale.ticks(TARGET_NB_BINS).length;
 
     e.preventDefault(); // This prevent VoiceOver from moving focus to the next text element
+    e.stopPropagation();
 
     if (e.key === "ArrowRight") {
       this.setState(
@@ -208,7 +206,7 @@ export class Histogram extends React.Component {
     const binsNb = indicatorScale.ticks(TARGET_NB_BINS).length;
 
     return (
-      <div>
+      <div className="histogram-container">
         <Chart
           bins={bins}
           indicatorScale={indicatorScale}
@@ -220,6 +218,7 @@ export class Histogram extends React.Component {
           indicator={indicator}
           indicators={INDICATORS}
           onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
           showTooltip={this.state.showTooltip}
           focusedBar={this.state.focusedBar}
           moveFocusToNextDataPoint={this.moveFocusToNextDataPoint}
@@ -241,7 +240,7 @@ class Controls extends React.Component {
     const { selected, indicators, isPlaying } = this.props;
 
     return (
-      <div>
+      <div className="histogram-controls">
         <select
           onChange={this.props.onIndicatorChange}
           onBlur={this.props.onIndicatorChange}
@@ -253,7 +252,7 @@ class Controls extends React.Component {
           ))}
         </select>
         <button onClick={this.props.onDataMelodyPlay}>
-          {isPlaying ? "STOP data pattern" : "PLAY data pattern"}
+          {isPlaying ? "STOP" : "PLAY"}
         </button>
       </div>
     );
@@ -308,7 +307,7 @@ class Chart extends React.Component {
     const indicatorInfos = indicators.find(d => d.id === indicator);
 
     return (
-      <div className="histogram-container">
+      <div className="histogram-chart">
         <svg
           className="histogram-svg"
           width={W}
@@ -365,7 +364,7 @@ class Chart extends React.Component {
                     id={`histogram-bar-overlay-${i}`}
                     className="histogram-bar-overlay"
                     key={`histogram-bar-overlay-${i}`}
-                    onMouseDown={i => this.props.onFocus(i)}
+                    onMouseDown={() => this.props.onFocus(i)}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)
@@ -386,6 +385,7 @@ class Chart extends React.Component {
                     // isFocused={i === this.props.focusedBar} // We need a ref to update focus
                     tabIndex={-1} // need a tabIndex to receive focus
                     onMouseDown={() => this.props.onFocus(i)}
+                    onBlur={this.props.onBlur}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)

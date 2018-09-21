@@ -1,5 +1,15 @@
 .histogram-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.histogram-chart {
+  width: 800px;
   position: relative;
+}
+.histogram-controls {
+  width: 200px;
 }
 
 /* .histogram-description {
@@ -27,40 +37,41 @@
 .histogram-x-axis-label {
   text-anchor: end;
   font-size: 12px;
+  fill: #ffffff;
 }
 .histogram-axis .domain,
 .histogram-axis .tick > line {
   stroke: none;
 }
 .histogram-axis.tick > text {
-  fill: grey;
+  fill: #ffffff;
 }
 .histogram-axis:focus {
   outline: 0;
 }
 .histogram-axis:focus .domain,
 .histogram-axis:focus .tick > line {
-  stroke: black;
+  stroke: #ffffff;
 }
 .histogram-axis:focus text {
-  fill: black;
+  fill: #ffffff;
 }
 .histogram-axis:focus tick {
-  fill: black;
+  fill: #ffffff;
 }
 
 /** DATA */
 .histogram-data:focus {
-  outline: 0;
+  /* outline: 0; */
 }
 .histogram-data:focus rect {
   fill: black;
 }
 rect.histogram-bar {
-  fill: crimson;
+  fill: #ff5555;
 }
 rect.histogram-bar:focus {
-  outline: none;
+  /* outline: none; */
   fill: black;
 }
 rect.histogram-bar:hover {

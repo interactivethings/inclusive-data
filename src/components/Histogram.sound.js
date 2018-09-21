@@ -3,10 +3,10 @@ import { axisBottom, axisLeft } from "d3-axis";
 import { scaleLinear } from "d3-scale";
 import { select } from "d3-selection";
 import * as React from "react";
-import planets from "../data/tidy/phl.json";
-import "./Histogram.css";
 import Tone from "tone";
 import { INDICATORS } from "../data/indicators.js";
+import planets from "../data/tidy/phl.json";
+import "./Histogram.css";
 
 /** Constants */
 const W = 1200;
@@ -19,7 +19,7 @@ const TARGET_NB_BINS = 100;
 // create a synth and connect it to the master output (speakers)
 const SYNTH = new Tone.Synth().toMaster();
 const LOWEST_TONE = 16; // A3
-const HIGHEST_TONE = 76; // A7
+const HIGHEST_TONE = 68; // A7
 // default BPM = 80
 const NOTE_DURATION = "8n"; // an eigth of a note (also available: fraction of a measure "1m" and time values "2s")
 const PLAYBACK_RATE = 12;
@@ -34,7 +34,8 @@ export class Histogram extends React.Component {
     this.state = {
       indicator: "st_distanceToSun",
       isPlaying: false,
-      focusedBar: 30
+      focusedBar: 5,
+      showTooltip: false
     };
   }
 
@@ -45,7 +46,7 @@ export class Histogram extends React.Component {
   updateDataMelody = (bins, maxBin, focus) => {
     const toneScale = scaleLinear()
       .domain([0, maxBin])
-      .range([LOWEST_TONE, HIGHEST_TONE]); // A3 to A7
+      .range([LOWEST_TONE, HIGHEST_TONE]);
 
     const dataMelody = bins.map((bin, i) => {
       return {
@@ -81,7 +82,7 @@ export class Histogram extends React.Component {
       this.state.focusedBar
     );
 
-    // Create Data Melody
+    // Create Data Melody part
     let part = new Tone.Part((time, value) => {
       //the value is an object which contains both the note and the velocity
       SYNTH.triggerAttackRelease(value.note, 0.1, time, value.velocity);
@@ -94,7 +95,7 @@ export class Histogram extends React.Component {
     part.start(0);
   };
 
-  playDataPattern = () => {
+  toggleDataMelody = () => {
     if (!this.state.isPlaying) {
       this.setState({ isPlaying: true });
       Tone.Transport.start("+0.05"); // a very little delay
@@ -105,12 +106,81 @@ export class Histogram extends React.Component {
     }
   };
 
-  playSound = () => {};
+  playSound = maxBin => {
+    // FIXME: if value =0, play a completely different sound.
 
-  handleDataPointClick = () => {
-    this.playSound();
+    const { indicator } = this.state;
+    console.log(this.state.focusedBar);
+    const maxValue = max(planets, d => d[indicator]);
+    const minValue = min(planets, d => d[indicator]);
+
+    const indicatorScale = scaleLinear()
+      .domain([minValue, maxValue])
+      .range([0, CHART_WIDTH]);
+    const bins = histogram()
+      .domain(indicatorScale.domain())
+      .thresholds(indicatorScale.ticks(TARGET_NB_BINS))
+      .value(d => d[indicator])(planets);
+
+    const count = bins[this.state.focusedBar].length;
+
+    const toneScale = scaleLinear()
+      .domain([0, maxBin])
+      .range([LOWEST_TONE, HIGHEST_TONE]);
+    const note = Tone.Frequency("A1").transpose(toneScale(count));
+    SYNTH.triggerAttackRelease(note, "16n");
   };
 
+  handleFocus = () => {
+    // this.playSound();
+    this.setState({ showTooltip: true });
+  };
+  moveFocusToNextDataPoint = e => {
+    const { indicator } = this.state;
+
+    const maxValue = max(planets, d => d[indicator]);
+    const minValue = min(planets, d => d[indicator]);
+
+    const indicatorScale = scaleLinear()
+      .domain([minValue, maxValue])
+      .range([0, CHART_WIDTH]);
+    const bins = histogram()
+      .domain(indicatorScale.domain())
+      .thresholds(indicatorScale.ticks(TARGET_NB_BINS))
+      .value(d => d[indicator])(planets);
+    const minBin = min(bins, d => d.length);
+    const maxBin = max(bins, d => d.length);
+    const binScale = scaleLinear()
+      .domain([minBin, maxBin])
+      .range([CHART_HEIGHT, 0])
+      .nice();
+
+    const binsNb = indicatorScale.ticks(TARGET_NB_BINS).length;
+
+    e.preventDefault(); // This prevent VoiceOver from moving focus to the next text element
+
+    if (e.key === "ArrowRight") {
+      this.setState(
+        {
+          focusedBar:
+            this.state.focusedBar === binsNb - 1 ? 0 : this.state.focusedBar + 1
+        },
+        () => this.playSound(maxBin)
+      );
+    } else {
+      // if (e.key === "ArrowLeft")
+      this.setState(
+        {
+          focusedBar:
+            this.state.focusedBar === 0 || this.state.focusedBar === -1
+              ? binsNb - 1
+              : this.state.focusedBar - 1
+        },
+        () => this.playSound(maxBin)
+      );
+    }
+    // FIXME: add a key press to access statistics values.
+  };
   render() {
     const { indicator } = this.state;
 
@@ -148,14 +218,17 @@ export class Histogram extends React.Component {
           data={planets}
           indicator={indicator}
           indicators={INDICATORS}
-          onDataPointClick={this.handleDataPointClick}
+          onFocus={this.handleFocus}
+          showTooltip={this.state.showTooltip}
+          focusedBar={this.state.focusedBar}
+          moveFocusToNextDataPoint={this.moveFocusToNextDataPoint}
         />
         <Controls
           selected={indicator}
           indicators={INDICATORS}
           onIndicatorChange={this.updateIndicator}
           isPlaying={this.state.isPlaying}
-          onDataMelodyPlay={this.playDataPattern}
+          onDataMelodyPlay={this.toggleDataMelody}
         />
       </div>
     );
@@ -193,17 +266,6 @@ class Chart extends React.Component {
     this.axisX = React.createRef();
     this.axisY = React.createRef();
     this.data = React.createRef();
-    // this.dataGroup = React.createRef();
-    Tone.Transport.schedule(this.triggerDataMelody, 0);
-    // Tone.Transport.loopEnd = MELODY.length;
-    Tone.Transport.loop = true;
-
-    this.state = {
-      focusedBar: -1,
-      withinNavigation: false,
-      displayHint: false,
-      isPlaying: false
-    };
   }
 
   createAxisX = scale => {
@@ -216,90 +278,12 @@ class Chart extends React.Component {
     g.call(axisLeft(scale).tickSize(-CHART_WIDTH));
   };
 
-  // moveFocusToDataGroup = e => {
-  //   e.preventDefault();
-  //   e.stopPropagation();
-  //   this.setState({ areBarsFocusable: false, displayHint: true });
-  //   this.dataGroup.current.focus();
-  // };
-
-  moveFocusToNextDataPoint = e => {
-    const { bins, binsNb } = this.props;
-    e.preventDefault(); // This prevent VoiceOver from moving focus to the next text element
-    if (e.key === "ArrowRight") {
-      this.setState(
-        {
-          focusedBar:
-            this.state.focusedBar === binsNb - 1
-              ? 0
-              : this.state.focusedBar + 1,
-          withinNavigation: true
-        },
-        this.focusRectangle,
-        this.playSound(bins[this.state.focusedBar + 1].length)
-      );
-    } else {
-      // if (e.key === "ArrowLeft")
-      this.setState(
-        {
-          focusedBar:
-            this.state.focusedBar === 0 || this.state.focusedBar === -1
-              ? binsNb - 1
-              : this.state.focusedBar - 1,
-          withinNavigation: true
-        },
-        this.focusRectangle
-      );
-    }
-    // FIXME: add a key press to access statistics values.
-  };
-
-  displayHint = index => {
-    this.setState({ displayHint: true, focusedBar: index });
-  };
-
-  hideHint = () => {
-    this.setState({ displayHint: false });
-  };
-
   componentDidUpdate() {
     const { indicatorScale, binScale } = this.props;
     this.createAxisX(indicatorScale);
     this.createAxisY(binScale);
-  }
-
-  focusRectangle = () => {
     this.data.current.focus();
-    // You need to move focus for VoiceOver to actually read the new element, updating "aria-activedesendant" is not enough
-  };
-
-  // playSound = count => {
-  //   // FIXME: if value =0, play a completely different sound.
-  //   const note = Tone.Frequency("A1").transpose(toneScale(count));
-  //   SYNTH.triggerAttackRelease(note, "16n");
-  // };
-
-  // stopPropagation = e => {
-  //   e.stopPropagation();
-  //   e.preventDefault();
-  // };
-
-  // handleBarClick = (index, count) => {
-  //   this.setState({
-  //     focusedBar: index,
-  //     areBarsFocusable: true,
-  //     displayHint: false
-  //   });
-  //   this.playSound(count);
-  // };
-
-  // handleDataGroupFocus = () => {
-  //   this.setState({ displayHint: true });
-  // };
-
-  // handleDataGroupBlur = () => {
-  //   this.setState({ displayHint: false });
-  // };
+  }
 
   render() {
     const {
@@ -329,14 +313,14 @@ class Chart extends React.Component {
           aria-describedby="histogram-description" // Link to hidden description of the application, with instructions
           aria-activedescendant={
             // Used to move aria focus to elements within the application, updates on user interaction
-            this.state.withinNavigation
-              ? `histogram-bar-${this.state.focusedBar}`
+            this.props.showTooltip
+              ? `histogram-bar-${this.props.focusedBar}`
               : null
           }
           aria-live="assertive"
           onKeyDown={e =>
             e.key === "ArrowLeft" || e.key === "ArrowRight"
-              ? this.moveFocusToNextDataPoint(e)
+              ? this.props.moveFocusToNextDataPoint(e)
               : null
           }
         >
@@ -374,13 +358,13 @@ class Chart extends React.Component {
                     id={`histogram-bar-overlay-${i}`}
                     className="histogram-bar-overlay"
                     key={`histogram-bar-overlay-${i}`}
-                    onMouseOver={() => this.displayHint(i)}
-                    onFocus={() => this.displayHint(i)}
-                    onMouseOut={() => this.hideHint()}
-                    onBlur={() => this.hideHint()}
+                    onMouseOver={this.props.onFocus}
+                    onFocus={this.props.onFocus}
+                    // onMouseOut={() => this.hideTooltip()}
+                    // onBlur={() => this.hideTooltip()}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
-                        ? this.moveFocusToNextDataPoint(e)
+                        ? this.props.moveFocusToNextDataPoint(e)
                         : null
                     }
                     aria-label={`${bin.length} planets between ${bin.x0} and ${
@@ -395,20 +379,17 @@ class Chart extends React.Component {
                     id={`histogram-bar-${i}`}
                     className="histogram-bar"
                     key={`histogram-bar-${i}`}
-                    ref={i === this.state.focusedBar && this.data} // We need a ref to update focus
+                    ref={i === this.props.focusedBar && this.data} // We need a ref to update focus
                     tabIndex={-1} // need a tabIndex to receive focus
-                    onMouseOver={() => this.displayHint(i)}
-                    onFocus={() => this.displayHint(i)}
-                    onMouseOut={() => this.hideHint()}
-                    onBlur={() => this.hideHint()}
+                    onMouseOver={this.props.onFocus}
+                    onFocus={this.props.onFocus}
+                    // onMouseOut={() => this.hideTooltip()}
+                    // onBlur={() => this.hideTooltip()}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
-                        ? this.moveFocusToNextDataPoint(e)
+                        ? this.props.moveFocusToNextDataPoint(e)
                         : null
                     }
-                    // aria-label={`${bin.length} planets between ${bin.x0} and ${
-                    //   bin.x1
-                    // } parsecs`}
                     aria-labelledby={`histogram-tooltip-${i}`} // This tells screen readers where to find the tooltip for this data point.
                     x={indicatorScale(bin.x0)}
                     y={binScale(bin.length)}
@@ -444,7 +425,7 @@ class Chart extends React.Component {
                   indicatorScale(bin.x0)}px, ${MARGIN.TOP +
                   binScale(bin.length)}px)`,
                 display:
-                  this.state.displayHint && i === this.state.focusedBar
+                  this.props.showTooltip && i === this.props.showBar
                     ? "block"
                     : "none"
               }}

@@ -34,7 +34,7 @@ export class Histogram extends React.Component {
     this.state = {
       indicator: "st_distanceToSun",
       isPlaying: false,
-      focusedBar: 5,
+      focusedBar: null,
       showTooltip: false
     };
   }
@@ -294,13 +294,19 @@ class Chart extends React.Component {
     g.call(axisLeft(scale).tickSize(-CHART_WIDTH));
   };
 
-  componentDidUpdate() {
+  focusDataGroup = () => {
+    this.dataGroup.current.focus();
+  };
+
+  componentDidUpdate(prevProps) {
     const { indicatorScale, binScale } = this.props;
     this.createAxisX(indicatorScale);
     this.createAxisY(binScale);
-    this.dataGroup.current
-      .querySelector(`#histogram-bar-${this.props.focusedBar}`)
-      .focus();
+    if (prevProps.focusedBar !== this.props.focusedBar) {
+      this.dataGroup.current
+        .querySelector(`#histogram-bar-${this.props.focusedBar}`)
+        .focus();
+    }
   }
   componentDidMount() {
     const { indicatorScale, binScale } = this.props;
@@ -384,7 +390,9 @@ class Chart extends React.Component {
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)
-                        : null
+                        : e.key === "Escape"
+                          ? this.focusDataGroup
+                          : null
                     }
                     aria-label={`${bin.length} planets between ${bin.x0} and ${
                       bin.x1

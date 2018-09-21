@@ -131,10 +131,11 @@ export class Histogram extends React.Component {
     SYNTH.triggerAttackRelease(note, "16n");
   };
 
-  handleFocus = () => {
+  handleFocus = i => {
     // this.playSound();
-    this.setState({ showTooltip: true });
+    this.setState({ showTooltip: true, focusedBar: i });
   };
+
   moveFocusToNextDataPoint = e => {
     const { indicator } = this.state;
 
@@ -265,7 +266,7 @@ class Chart extends React.Component {
     super();
     this.axisX = React.createRef();
     this.axisY = React.createRef();
-    this.data = React.createRef();
+    this.dataGroup = React.createRef();
   }
 
   createAxisX = scale => {
@@ -282,7 +283,14 @@ class Chart extends React.Component {
     const { indicatorScale, binScale } = this.props;
     this.createAxisX(indicatorScale);
     this.createAxisY(binScale);
-    this.data.current.focus();
+    this.dataGroup.current
+      .querySelector(`#histogram-bar-${this.props.focusedBar}`)
+      .focus();
+  }
+  componentDidMount() {
+    const { indicatorScale, binScale } = this.props;
+    this.createAxisX(indicatorScale);
+    this.createAxisY(binScale);
   }
 
   render() {
@@ -296,7 +304,6 @@ class Chart extends React.Component {
       indicator,
       indicators
     } = this.props;
-    // const { data, indicator, indicators } = this.props;
 
     const indicatorInfos = indicators.find(d => d.id === indicator);
 
@@ -348,7 +355,7 @@ class Chart extends React.Component {
           </text>
           <g
             className="histogram-data"
-            // ref={this.dataGroup}
+            ref={this.dataGroup}
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
           >
             {bins.map((bin, i) => {
@@ -358,10 +365,7 @@ class Chart extends React.Component {
                     id={`histogram-bar-overlay-${i}`}
                     className="histogram-bar-overlay"
                     key={`histogram-bar-overlay-${i}`}
-                    onMouseOver={this.props.onFocus}
-                    onFocus={this.props.onFocus}
-                    // onMouseOut={() => this.hideTooltip()}
-                    // onBlur={() => this.hideTooltip()}
+                    onMouseDown={i => this.props.onFocus(i)}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)
@@ -375,16 +379,13 @@ class Chart extends React.Component {
                     width={CHART_WIDTH / binsNb}
                     height={CHART_HEIGHT}
                   />
-                  <rect
+                  <rect //FIXME: should it be a focusableRectangle with an isFocused props?
                     id={`histogram-bar-${i}`}
                     className="histogram-bar"
                     key={`histogram-bar-${i}`}
-                    ref={i === this.props.focusedBar && this.data} // We need a ref to update focus
+                    // isFocused={i === this.props.focusedBar} // We need a ref to update focus
                     tabIndex={-1} // need a tabIndex to receive focus
-                    onMouseOver={this.props.onFocus}
-                    onFocus={this.props.onFocus}
-                    // onMouseOut={() => this.hideTooltip()}
-                    // onBlur={() => this.hideTooltip()}
+                    onMouseDown={() => this.props.onFocus(i)}
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)
@@ -425,7 +426,7 @@ class Chart extends React.Component {
                   indicatorScale(bin.x0)}px, ${MARGIN.TOP +
                   binScale(bin.length)}px)`,
                 display:
-                  this.props.showTooltip && i === this.props.showBar
+                  this.props.showTooltip && i === this.props.focusedBar
                     ? "block"
                     : "none"
               }}

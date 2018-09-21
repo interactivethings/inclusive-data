@@ -1,7 +1,7 @@
 import { markdown } from "catalog";
 
 export default () => markdown`
-# What it is
+# Inclusivity Lab
 
 This Catalog is a repository for experimental data representation using not only visual features but also sound, for a multi sensorial immersion into data.
 

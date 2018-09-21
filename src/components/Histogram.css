@@ -1,6 +1,9 @@
 .histogram-container {
   position: relative;
   font-family: sans-serif;
+  margin-top: 64px;
+  margin-bottom: 64px;
+  color: #00263e;
 }
 
 .histogram-chart {
@@ -13,6 +16,37 @@
 
 .histogram-title {
   text-align: center;
+}
+
+/* Control  */
+.histogram-controls {
+}
+.histogram-controls__select {
+  -webkit-appearance: none;
+  background: transparent;
+  font-size: 1em;
+  padding: 0.5em 1em;
+  margin: 0.4em 0 1em 0;
+  color: #00263e;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border: 1px solid #00263e;
+}
+.histogram-controls__play-button {
+  display: inline-block;
+  border: 1px solid #00263e;
+  padding: 0.5em 1em;
+  margin: 0.4em 0 1em 0;
+  text-decoration: none;
+  background: transparent;
+  color: #00263e;
+  font-size: 1em;
+  cursor: pointer;
+  text-align: center;
+  transition: "background-color" 0.2s;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 /** Hint */
 .histogram-hint-rect {
@@ -33,27 +67,27 @@
 .histogram-x-axis-label {
   text-anchor: end;
   font-size: 12px;
-  fill: #ffffff;
+  fill: #00263e;
 }
 .histogram-axis .domain,
 .histogram-axis .tick > line {
   stroke: none;
 }
 .histogram-axis.tick > text {
-  fill: #ffffff;
+  fill: #00263e;
 }
 .histogram-axis:focus {
   outline: 0;
 }
 .histogram-axis:focus .domain,
 .histogram-axis:focus .tick > line {
-  stroke: #ffffff;
+  stroke: #00263e;
 }
 .histogram-axis:focus text {
-  fill: #ffffff;
+  fill: #00263e;
 }
 .histogram-axis:focus tick {
-  fill: #ffffff;
+  fill: #00263e;
 }
 
 /** DATA */

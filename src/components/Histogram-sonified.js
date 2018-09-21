@@ -11,7 +11,7 @@ import "./Histogram.css";
 /** Constants */
 const W = 800;
 const H = 600;
-const MARGIN = { TOP: 100, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
+const MARGIN = { TOP: 50, RIGHT: 50, BOTTOM: 50, LEFT: 50 };
 const CHART_WIDTH = W - MARGIN.LEFT - MARGIN.RIGHT;
 const CHART_HEIGHT = H - MARGIN.TOP - MARGIN.BOTTOM;
 const TARGET_NB_BINS = 50;
@@ -110,7 +110,6 @@ export class Histogram extends React.Component {
     // FIXME: if value =0, play a completely different sound.
 
     const { indicator } = this.state;
-    console.log(this.state.focusedBar);
     const maxValue = max(planets, d => d[indicator]);
     const minValue = min(planets, d => d[indicator]);
 
@@ -207,6 +206,13 @@ export class Histogram extends React.Component {
 
     return (
       <div className="histogram-container">
+        <Controls
+          selected={indicator}
+          indicators={INDICATORS}
+          onIndicatorChange={this.updateIndicator}
+          isPlaying={this.state.isPlaying}
+          onDataMelodyPlay={this.toggleDataMelody}
+        />
         <Chart
           bins={bins}
           indicatorScale={indicatorScale}
@@ -223,13 +229,6 @@ export class Histogram extends React.Component {
           focusedBar={this.state.focusedBar}
           moveFocusToNextDataPoint={this.moveFocusToNextDataPoint}
         />
-        <Controls
-          selected={indicator}
-          indicators={INDICATORS}
-          onIndicatorChange={this.updateIndicator}
-          isPlaying={this.state.isPlaying}
-          onDataMelodyPlay={this.toggleDataMelody}
-        />
       </div>
     );
   }
@@ -241,7 +240,10 @@ class Controls extends React.Component {
 
     return (
       <div className="histogram-controls">
+        <label htmlFor="histogram-indicator-select">Select an Indicator:</label>
         <select
+          id="histogram-indicator-select"
+          className="histogram-controls__select"
           onChange={this.props.onIndicatorChange}
           onBlur={this.props.onIndicatorChange}
         >
@@ -251,7 +253,21 @@ class Controls extends React.Component {
             </option>
           ))}
         </select>
-        <button onClick={this.props.onDataMelodyPlay}>
+        <label
+          htmlFor="histogram-play-data-melody"
+          aria-describedby="histogram-play-button-description"
+        >
+          Listen to the data pattern
+        </label>
+        <div id="histogram-play-button-description" style={{ display: "none" }}>
+          Press space to play or stop
+        </div>
+        <button
+          id="histogram-play-data-melody"
+          aria-live="polite"
+          onClick={this.props.onDataMelodyPlay}
+          className="histogram-controls__play-button"
+        >
           {isPlaying ? "STOP" : "PLAY"}
         </button>
       </div>

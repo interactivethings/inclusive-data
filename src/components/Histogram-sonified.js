@@ -390,7 +390,7 @@ class Chart extends React.Component {
                     onKeyDown={e =>
                       e.key === "ArrowLeft" || e.key === "ArrowRight"
                         ? this.props.moveFocusToNextDataPoint(e)
-                        : e.key === "Escape"
+                        : e.key === "Escape" || e.key === "Tab"
                           ? this.focusDataGroup
                           : null
                     }

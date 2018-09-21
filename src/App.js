@@ -4,7 +4,7 @@ import { Streamgraph } from "./components/Streamgraph";
 import { Scatterplot } from "./components/Scatterplot.phl";
 import { Histogram } from "./components/Histogram.aria";
 import { Histogram as HistogramSound } from "./components/Histogram.sound";
-
+import { Piano } from "./components/piano";
 export class App extends React.Component {
   render() {
     return (
@@ -25,8 +25,8 @@ export class App extends React.Component {
           About 97% of all the confirmed exoplanets have been discovered by
           indirect techniques of detection, mainly by radial velocity
           measurements and transit monitoring techniques.
-        </p>
-        <Streamgraph /> */}
+        </p>*/}
+        {/* <Streamgraph /> */}
         {/* <h2>How far away have astronomers seen exoplanets?</h2> */}
         {/* <p>
           The parsec (symbol: pc) is a unit of length used to measure large

@@ -8,8 +8,4 @@ This Catalog is a repository for experimental data representation using not only
 ### Inclusivity
 
 The starting point is too make data visualizations accessible to users of assistive technologies such as screen readers. An emphasis is therefore put on keyboard navigation and compatibility with [WAI ARIA](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA).
-
-### Inspiration
-
-- Brian Foo
 `;

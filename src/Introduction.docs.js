@@ -1,4 +1,6 @@
 import { markdown } from "catalog";
+import { Histogram } from "./components/Histogram-sonified";
+import HistogramAriaDocs from "./components/Histogram-aria.docs";
 
 export default () => markdown`
 # Inclusivity Lab

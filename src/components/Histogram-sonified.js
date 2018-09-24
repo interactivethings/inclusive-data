@@ -358,12 +358,14 @@ class Chart extends React.Component {
               MARGIN.TOP})`}
             ref={this.axisX}
             tabIndex={-1}
+            aria-hidden={true}
           />
           <g
             className="histogram-axis"
             transform={`translate(${MARGIN.LEFT}, ${MARGIN.TOP})`}
             ref={this.axisY}
             tabIndex={-1}
+            aria-hidden={true}
           />
           <text
             className="histogram-x-axis-label"
@@ -371,6 +373,7 @@ class Chart extends React.Component {
             x={W}
             y={H - 6}
             tabIndex={-1}
+            aria-hidden={true}
           >
             {`→ ${indicatorInfos.label} (${indicatorInfos.unit})`}
           </text>

@@ -8,12 +8,12 @@ ReactDOM.render(
     pages={[
       {
         path: "/",
-        title: "INTRODUCTION",
+        title: "Introduction",
         content: pageLoader(() => import("./Introduction.docs"))
       },
       {
         path: "/histogram",
-        title: "HISTOGRAM",
+        title: "Histogram",
         pages: [
           {
             path: "/histogram/aria",
@@ -24,7 +24,7 @@ ReactDOM.render(
           },
           {
             path: "/histogram/sonified",
-            title: "SONIFIED",
+            title: "Sonified",
             content: pageLoader(() =>
               import("../src/components/Histogram-sonified.docs")
             )

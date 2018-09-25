@@ -34,13 +34,13 @@ export class Histogram extends React.Component {
     this.state = {
       indicator: "st_distanceToSun",
       isPlaying: false,
-      focusedBar: null,
+      focusedBar: -1,
       showTooltip: false
     };
   }
 
   updateIndicator = e => {
-    this.setState({ indicator: e.currentTarget.value });
+    this.setState({ indicator: e.currentTarget.value, focusedBar: null });
   };
 
   updateDataMelody = (bins, maxBin, focus) => {
@@ -86,7 +86,6 @@ export class Histogram extends React.Component {
     let part = new Tone.Part((time, value) => {
       //the value is an object which contains both the note and the velocity
       SYNTH.triggerAttackRelease(value.note, 0.1, time, value.velocity);
-      console.log(time);
     }, dataMelody);
 
     part.playbackRate = PLAYBACK_RATE;
@@ -308,6 +307,7 @@ class Chart extends React.Component {
         .focus();
     }
   }
+
   componentDidMount() {
     const { indicatorScale, binScale } = this.props;
     this.createAxisX(indicatorScale);

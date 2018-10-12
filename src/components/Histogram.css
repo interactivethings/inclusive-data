@@ -1,146 +1,147 @@
 .histogram-container {
-  position: relative;
-  font-family: sans-serif;
-  margin-top: 64px;
-  margin-bottom: 64px;
-  color: #00263e;
+	position: relative;
+	font-family: sans-serif;
+	margin-top: 64px;
+	margin-bottom: 64px;
+	color: #00263e;
 }
 
 .histogram-chart {
-  position: relative;
-  width: 800px;
+	position: relative;
+	width: 800px;
 }
 .histogram-controls {
-  width: 200px;
+	width: 200px;
 }
 
 .histogram-title {
-  text-align: center;
+	text-align: center;
 }
 
 /* Control  */
 .histogram-controls {
+	margin-top: 64px;
 }
 .histogram-controls__select {
-  -webkit-appearance: none;
-  background: transparent;
-  font-size: 1em;
-  padding: 0.5em 1em;
-  margin: 0.4em 0 1em 0;
-  color: #00263e;
-  border-radius: 0;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
-  border: 1px solid #00263e;
-  background-image: linear-gradient(45deg, transparent 50%, #00263e 50%),
-    linear-gradient(135deg, #00263e 50%, transparent 50%);
-  background-position: calc(100% - 30px) calc(1em - 1px),
-    calc(100% - 20px) calc(1em - 1px);
-  background-size: 10px 10px, 10px 10px, 1px 1.5em;
-  background-repeat: no-repeat;
+	-webkit-appearance: none;
+	background: transparent;
+	font-size: 1em;
+	padding: 0.5em 1em;
+	margin: 0.4em 0 1em 0;
+	color: #00263e;
+	border-radius: 0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	border: 1px solid #00263e;
+	background-image: linear-gradient(45deg, transparent 50%, #00263e 50%),
+		linear-gradient(135deg, #00263e 50%, transparent 50%);
+	background-position: calc(100% - 30px) calc(1em - 1px), calc(100% - 20px) calc(1em - 1px);
+	background-size: 10px 10px, 10px 10px, 1px 1.5em;
+	background-repeat: no-repeat;
 }
 .histogram-controls__select:hover {
-  background-color: #ffffff;
-  cursor: pointer;
+	background-color: #ffffff;
+	cursor: pointer;
 }
 .histogram-controls__play-button {
-  display: inline-block;
-  border: 1px solid #00263e;
-  padding: 0.5em 1em;
-  margin: 0.4em 0 1em 0;
-  text-decoration: none;
-  background: transparent;
-  color: #00263e;
-  font-size: 1em;
-  cursor: pointer;
-  text-align: center;
-  transition: "background-color" 0.2s;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+	display: inline-block;
+	border: 1px solid #00263e;
+	min-width: 100px;
+	padding: 0.5em 1em;
+	margin: 0.4em 0 1em 0;
+	text-decoration: none;
+	background: transparent;
+	color: #00263e;
+	font-size: 1em;
+	cursor: pointer;
+	text-align: center;
+	transition: "background-color" 0.2s;
+	-webkit-appearance: none;
+	-moz-appearance: none;
 }
 .histogram-controls__play-button:hover {
-  background-color: #ffffff;
+	background-color: #ffffff;
 }
 /** Hint */
 .histogram-hint-rect {
-  fill-opacity: 0.2;
-  pointer-events: none;
+	fill-opacity: 0.2;
+	pointer-events: none;
 }
 .histogram-hint-text {
-  text-anchor: middle;
-  pointer-events: none;
+	text-anchor: middle;
+	pointer-events: none;
 }
 /** SVG */
 .histogram-svg:focus rect {
-  fill: #00263e;
-  outline: 0;
+	fill: #00263e;
+	outline: 0;
 }
 
 /** AXIS */
 .histogram-x-axis-label {
-  text-anchor: end;
-  font-size: 12px;
-  fill: #00263e;
+	text-anchor: end;
+	font-size: 12px;
+	fill: #00263e;
 }
 .histogram-axis .domain,
 .histogram-axis .tick > line {
-  stroke: none;
+	stroke: none;
 }
 .histogram-axis.tick > text {
-  fill: #00263e;
+	fill: #00263e;
 }
 .histogram-axis:focus {
-  outline: 0;
+	outline: 0;
 }
 .histogram-axis:focus .domain,
 .histogram-axis:focus .tick > line {
-  stroke: #00263e;
+	stroke: #00263e;
 }
 .histogram-axis:focus text {
-  fill: #00263e;
+	fill: #00263e;
 }
 .histogram-axis:focus tick {
-  fill: #00263e;
+	fill: #00263e;
 }
 
 /** DATA */
 .histogram-data:focus {
-  outline: 0;
+	outline: 0;
 }
 .histogram-data:focus rect {
-  fill: #00263e;
+	fill: #00263e;
 }
 rect.histogram-bar {
-  fill: #ff5555;
+	fill: #ff5555;
 }
 rect.histogram-bar:focus {
-  outline: none;
-  fill: #00263e;
+	outline: none;
+	fill: #00263e;
 }
 rect.histogram-bar:hover {
-  fill: #00263e;
+	fill: #00263e;
 }
 rect.histogram-bar-overlay {
-  opacity: 0;
+	opacity: 0;
 }
 /** Tooltip */
 .histogram-tooltip {
-  overflow: visible;
-  pointer-events: none;
-  position: absolute;
-  background: white;
-  color: #00263e;
-  top: 0;
-  left: 0;
-  font-size: 1em;
-  line-height: 1.4em;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  margin-top: -4em;
-  border: 1px solid #00263e;
+	overflow: visible;
+	pointer-events: none;
+	position: absolute;
+	background: white;
+	color: #00263e;
+	top: 0;
+	left: 0;
+	font-size: 1em;
+	line-height: 1.4em;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	margin-top: -4em;
+	border: 1px solid #00263e;
 }
 .histogram-tooltip-item {
-  margin: 0.5em;
+	margin: 0.5em;
 }

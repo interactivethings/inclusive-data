@@ -28,8 +28,8 @@ export class Histogram extends React.Component {
 	constructor() {
 		super();
 		Tone.Transport.schedule(this.triggerDataMelody, 0);
-		Tone.Transport.loopEnd = '5';
-		Tone.Transport.loop = true;
+		// Tone.Transport.loopEnd = '5';
+		Tone.Transport.loop = false;
 
 		this.state = {
 			indicator: 'st_distanceToSun',
@@ -43,7 +43,7 @@ export class Histogram extends React.Component {
 		this.setState({ indicator: e.currentTarget.value });
 	};
 
-	updateDataMelody = (bins, maxBin, focus) => {
+	updateDataMelody = (bins, maxBin) => {
 		const toneScale = scaleLinear().domain([ 0, maxBin ]).range([ LOWEST_TONE, HIGHEST_TONE ]);
 
 		const dataMelody = bins.map((bin, i) => {
@@ -70,11 +70,11 @@ export class Histogram extends React.Component {
 		const maxBin = max(bins, (d) => d.length);
 
 		// Get Data Melody notes
-		const dataMelody = this.updateDataMelody(bins, maxBin, this.state.focusedBar);
+		const dataMelody = this.updateDataMelody(bins, maxBin);
 
 		// Create Data Melody part
 		let part = new Tone.Part((time, value) => {
-			//the value is an object which contains both the note and the velocity
+			// the value is an object which contains both the note and the velocity
 			SYNTH.triggerAttackRelease(value.note, 0.1, time, value.velocity);
 		}, dataMelody);
 
@@ -88,7 +88,7 @@ export class Histogram extends React.Component {
 		if (!this.state.isPlaying) {
 			this.setState({ isPlaying: true });
 			Tone.Transport.start('+0.05'); // a very little delay
-			// Move focus to currently played bar
+			// FIXME: Move focus to currently played bar
 		} else {
 			this.setState({ isPlaying: false });
 			Tone.Transport.stop();
@@ -96,7 +96,7 @@ export class Histogram extends React.Component {
 	};
 
 	playSound = (maxBin) => {
-		// FIXME: if value = 0, play a completely different sound?
+		// FIXME: if value = 0, play a different kind of sound?
 
 		const { indicator } = this.state;
 		const maxValue = max(planets, (d) => d[indicator]);
@@ -183,13 +183,6 @@ export class Histogram extends React.Component {
 
 		return (
 			<div className="histogram-container">
-				<Controls
-					selected={indicator}
-					indicators={INDICATORS}
-					onIndicatorChange={this.updateIndicator}
-					isPlaying={this.state.isPlaying}
-					onDataMelodyPlay={this.toggleDataMelody}
-				/>
 				<Chart
 					bins={bins}
 					indicatorScale={indicatorScale}
@@ -206,6 +199,13 @@ export class Histogram extends React.Component {
 					focusedBar={this.state.focusedBar}
 					moveFocusToNextDataPoint={this.moveFocusToNextDataPoint}
 				/>
+				<Controls
+					selected={indicator}
+					indicators={INDICATORS}
+					onIndicatorChange={this.updateIndicator}
+					isPlaying={this.state.isPlaying}
+					onDataMelodyPlay={this.toggleDataMelody}
+				/>
 			</div>
 		);
 	}
@@ -217,7 +217,7 @@ class Controls extends React.Component {
 
 		return (
 			<div className="histogram-controls">
-				<label htmlFor="histogram-indicator-select">Select an Indicator:</label>
+				<label htmlFor="histogram-indicator-select">Select an Indicator</label>
 				<select
 					id="histogram-indicator-select"
 					className="histogram-controls__select"
@@ -225,7 +225,7 @@ class Controls extends React.Component {
 					onBlur={this.props.onIndicatorChange}
 				>
 					{indicators.map((indicator) => (
-						<option value={indicator.id} selected={indicator.id === selected}>
+						<option key={indicator.id} value={indicator.id} selected={indicator.id === selected}>
 							{indicator.label}
 						</option>
 					))}
@@ -249,7 +249,6 @@ class Controls extends React.Component {
 	}
 }
 
-/** Component */
 class Chart extends React.Component {
 	constructor() {
 		super();

@@ -96,7 +96,7 @@ export class Histogram extends React.Component {
 	};
 
 	playSound = (maxBin) => {
-		// FIXME: if value =0, play a completely different sound.
+		// FIXME: if value = 0, play a completely different sound?
 
 		const { indicator } = this.state;
 		const maxValue = max(planets, (d) => d[indicator]);
@@ -298,16 +298,15 @@ class Chart extends React.Component {
 					className="histogram-svg"
 					width={W}
 					height={H}
-					tabIndex={0} // Makes the element focusable (accessible through tabbing), and thus actionable
-					role="application" // Tells screen readers that this is an interactive component
-					aria-roledescription="data visualization" // Tells what kind of interactive element it is
-					aria-labelledby="histogram-title" // Link to id of title
+					tabIndex={0} // Make the element focusable (accessible through tabbing), and thus actionable
+					role="application" // Tell screen readers that this is an interactive element
+					aria-roledescription="data visualization" // Give a more meaningful role description
+					aria-labelledby="histogram-title" // Link to the id of the div with title
 					aria-describedby="histogram-description" // Link to hidden description of the application, with instructions
 					aria-activedescendant={
 						// Used to move aria focus to elements within the application, updates on user interaction
 						this.props.showTooltip ? `histogram-bar-${this.props.focusedBar}` : null
 					}
-					aria-live="assertive"
 					onKeyDown={(e) =>
 						e.key === 'ArrowLeft' || e.key === 'ArrowRight' ? this.props.moveFocusToNextDataPoint(e) : null}
 				>
@@ -358,19 +357,19 @@ class Chart extends React.Component {
 										width={CHART_WIDTH / binsNb}
 										height={CHART_HEIGHT}
 									/>
-									<rect //FIXME: should it be a focusableRectangle with an isFocused props?
+									<rect
+										//FIXME: should it be a focusableRectangle with an isFocused props?
 										id={`histogram-bar-${i}`}
 										className="histogram-bar"
 										key={`histogram-bar-${i}`}
-										// isFocused={i === this.props.focusedBar} // We need a ref to update focus
-										tabIndex={-1} // need a tabIndex to receive focus
+										tabIndex={-1} // this element can receive focus programatically, not in the tab sequence.
 										onMouseDown={() => this.props.onFocus(i)}
 										onBlur={this.props.onBlur}
 										onKeyDown={(e) =>
 											e.key === 'ArrowLeft' || e.key === 'ArrowRight'
 												? this.props.moveFocusToNextDataPoint(e)
 												: null}
-										aria-labelledby={`histogram-tooltip-${i}`} // This tells screen readers where to find the tooltip for this data point.
+										aria-labelledby={`histogram-tooltip-${i}`} // Tell screen readers where to find the tooltip for this data point.
 										x={indicatorScale(bin.x0)}
 										y={binScale(bin.length)}
 										width={CHART_WIDTH / binsNb - 2}
@@ -382,7 +381,7 @@ class Chart extends React.Component {
 					</g>
 				</svg>
 				<figcaption id="histogram-title" className="histogram-title">
-					Distribution of confirmed exoplanets by their distance to the Sun
+					{`Distribution of confirmed exoplanets by ${indicatorInfos.label}`}
 				</figcaption>
 				<div id="histogram-description" className="histogram-description" style={{ display: 'none' }}>
 					{`Histogram of ${planetsNb} planets. The horizontal axis is a linear scale of distance to the Sun from 0 to ${valueExtent[1]} parsecs. The vertical axis is a count of planets in each bin. Use left and right arrows to access single data points, press tab to exit`}

@@ -21,7 +21,6 @@ const SYNTH = new Tone.Synth().toMaster();
 const LOWEST_TONE = 16; // A3
 const HIGHEST_TONE = 68; // A7
 // default BPM = 80
-const NOTE_DURATION = '8n'; // an eigth of a note (also available: fraction of a measure "1m" and time values "2s")
 const PLAYBACK_RATE = 12;
 
 export class Histogram extends React.Component {
